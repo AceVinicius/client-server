@@ -130,5 +130,5 @@ execute( char **command ,
     
     fprintf(stderr, "client: command not found: %s\n", command[ 0 ]);
 
-    return 2;
+    return CONTINUE_CLIENT;
 }

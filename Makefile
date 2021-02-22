@@ -46,13 +46,6 @@ BIN_FILE  := $(BIN_DIR)/$(TARGET)
 
 
 
-
-
-
-
-
-
-
 # Build Rules
 .PHONY: clean
 .DEFAULT_GOAL := all
@@ -108,11 +101,6 @@ clean:
 
 
 
-
-
-
-
-
 # Print Variables For Debug
 REAL_CC := $(CC)
 REAL_LD := $(LD)
@@ -148,7 +136,7 @@ show:
 
 
 # Help
-# help:
+help:
 # 	@echo ''
 # 	@echo 'TARGET:       ' $(TARGET)
 # 	@echo 'CURDIR:       ' $(CURDIR)

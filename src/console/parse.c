@@ -88,8 +88,8 @@ parse( char *input )
         token = strtok(NULL, WHITESPACE);
     }
 
-    commands[ position_commands ]   = NULL;
-    options[ position_options ]     = NULL;
+    commands[ position_commands ] = NULL;
+    options[ position_options ]   = NULL;
 
     transfer[ 0 ] = commands;
     transfer[ 1 ] = options;

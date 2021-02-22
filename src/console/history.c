@@ -20,6 +20,9 @@
 
 
 
+/**
+ * @brief Constants
+ */
 const char *k_history_file_name = "/.history";
 
 

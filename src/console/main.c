@@ -40,30 +40,9 @@
 
 
 /**
- * @brief Defines
- */
-# define PROMPT_LIMIT 128
-# define HOST_LIMIT    32
-
-
-
-/**
- * @brief Prototypes
- */
-void  initialize_readline  ( void );
-void  build_prompt         ( char * );
-void  get_user_input       ( char * );
-int   main                 ( /*const int, const char ***/ );
-
-
-
-/**
  * @brief Constants
  */
 static char *input = (char *) NULL;
-
-
-
 
 
 
@@ -85,9 +64,9 @@ void
 build_prompt( char *prompt ) 
 {
     char *user = getenv("USER");
-    // char *host = getenv("HOST"); // !BUG -> (null) host value when uncommented
+    // char *host = getenv("HOST");  // !BUG -> (null) host value when uncommented
     char *pwd  = getenv("PWD");
-    char *home = getenv("HOME");
+    char *home = getenv("HOME");     // !BUG -> Getting /.history at the end?
     
     if (user == NULL ||
         // host == NULL ||
