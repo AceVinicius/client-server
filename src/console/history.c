@@ -14,9 +14,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "../../lib/include/history.h"
+#include "../../lib/include/allocation.h"
 
 
 
@@ -75,10 +75,15 @@ add_input_to_history( char *input )
 {
     FILE *history_ptr = open_file(get_history_path(), "a");
 
-    fputs(strcat(input, "\n"), history_ptr);
+    fputs(input, history_ptr);
     if (ferror(history_ptr))
     {
-        printf("add_input_to_history failed: %s was not added", input);
+        printf("add_input_to_history failed: %s was not added\n", input);
+    }
+    fputs("\n", history_ptr);
+    if (ferror(history_ptr))
+    {
+        printf("add_input_to_history failed: \\n was not added\n");
     }
 
     close_file(history_ptr);
@@ -94,8 +99,11 @@ add_input_to_history( char *input )
 char *
 get_history_path( void )
 {
-    char *history_path = getenv("HOME");
-    if (history_path == NULL)
+    const char *home = getenv("HOME");
+    size_t size = strlen(home);
+    char *history_path = (char *) allocate(size, sizeof(char));
+    
+    if (strncpy(history_path, home, size+1) == NULL)
     {
         perror("get_history_path");
         exit(EXIT_FAILURE);
@@ -103,7 +111,14 @@ get_history_path( void )
 
     if (strstr(history_path, k_history_file_name) == NULL)
     {
-        strcat(history_path, k_history_file_name);
+        size_t new_size = strlen(history_path) + strlen(k_history_file_name);
+        history_path = (char *) reallocate(history_path, new_size+1, sizeof(char));
+
+        if (strncat(history_path, k_history_file_name, new_size) == NULL)
+        {
+            perror("get_history_path");
+            exit(EXIT_FAILURE);
+        }
     }
 
     return history_path;
@@ -125,17 +140,17 @@ history( void )
 
     char history[ HISTORY_LIMIT ];
     
-    for (unsigned int i = 1; !feof(history_ptr); i++)
+    for (size_t i = 1; !feof(history_ptr); i++)
     {
         if (fgets(history, HISTORY_LIMIT, history_ptr) != NULL)
         {
-            printf("  %*d  %s", 3, i, history);
+            printf("  %*zu  %s", 3, i, history);
         }
         else
         {
             if (ferror(history_ptr))
             {
-                printf("history: reading error at line %d", i);
+                printf("history: reading error at line %zu", i);
                 return EXIT_FAILURE;
             }
         }

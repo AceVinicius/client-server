@@ -3,11 +3,12 @@
 # General
 CC			= clang
 LD			= clang
-DBG         = 
+ST_AN       = scan-build #--force-analyze-debug-code -internal-stats --view -stats -internal-stats -enable-checker security.insecureAPI.strcpy -enable-checker security.insecureAPI.rand -enable-checker security.insecureAPI.decodeValueOfObjCType
+DBG         = #gdb
 RM			= rm -rdf
 SHELL       = /bin/zsh
 INSTALL		= install
-DEBUG       = -O3 -g3 
+DEBUG       = -O3 -g3
 WARNING     = -Wall -Wextra -Wpedantic
 
 
@@ -22,7 +23,7 @@ BIN_DIR		= bin
 
 # CFLAGS, LDFLAGS, CPPFLAGS, PREFIX can be overriden on CLI
 CFLAGS		:= $(WARNING) $(DEBUG) -std=c17
-CPPFLAGS	:= -MMD -MP -fPIE
+CPPFLAGS	:= -MMD -MP
 LDFLAGS		:= 
 PREFIX		:= /usr/local
 TARGET_ARCH :=
@@ -63,7 +64,7 @@ directories:
 $(BIN_FILE): $(OBJ_FILES)
 	@echo '\n\n---------------------- LINKER\n\n'
 	
-	$(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
+	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
 
 # Object
 objs: $(OBJ_FILES)
@@ -71,7 +72,7 @@ objs: $(OBJ_FILES)
 $(OBJ_DIR)/%.o:*/*/%.c
 	@echo '\n\n---------------------- COMPILER:' $< '\n\n'
 	
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
+	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
 
 # Run
@@ -112,6 +113,7 @@ show:
 	@echo '--------------'
 	@echo 'COMPILER:     ' $(REAL_CC)
 	@echo 'LINKER:       ' $(REAL_LD)
+	@echo 'ST_AN:        ' $(ST_AN)
 	@echo 'DBG:          ' $(DBG)
 	@echo 'SHELL:        ' $(SHELL)
 	@echo '--------------'

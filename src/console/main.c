@@ -22,6 +22,7 @@
 #include "../../lib/include/history.h"
 #include "../../lib/include/parse.h"
 #include "../../lib/include/execute.h"
+#include "../../lib/include/allocation.h"
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -63,37 +64,46 @@ initialize_readline( void )
 void
 build_prompt( char *prompt ) 
 {
-    char *user = getenv("USER");
-    // char *host = getenv("HOST");  // !BUG -> (null) host value when uncommented
-    char *pwd  = getenv("PWD");
-    char *home = getenv("HOME");     // !BUG -> Getting /.history at the end?
-    
-    if (user == NULL ||
-        // host == NULL ||
-        pwd  == NULL ||
-        home == NULL)
+    const char *k_user = getenv("USER");
+    // const char *k_host = getenv("HOST");  // !BUG -> (null) host value
+    const char *k_home = getenv("HOME");
+    const char *k_pwd  = getenv("PWD");
+
+    if (k_user == NULL ||
+        // k_host == NULL ||
+        k_pwd  == NULL ||
+        k_home == NULL)
     {
         perror("getenv");
         exit(EXIT_FAILURE);
     }
 
-    char host[ HOST_LIMIT ];
+    char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     if (gethostname(host, HOST_LIMIT) == -1)
     {
         perror("gethostname");
         exit(EXIT_FAILURE);
     }
 
-    if (strcmp(pwd, home) == 0)
+    char *pwd = NULL; // (char *) allocate(strlen(k_pwd), sizeof(char));
+    
+    if (strcmp(k_pwd, k_home) == 0)
     {
-        pwd = "~";
+        pwd = strdup("~");
     }
-    else if (strcmp(pwd, "/") != 0)
+    else if (strcmp(k_pwd, "/") == 0)
     {
-        pwd = strrchr(pwd, '/') + 1;
+        pwd = strdup("/");
+    }
+    else
+    {
+        pwd = strdup(strrchr(k_pwd, '/') + 1);
     }
 
-    snprintf(prompt, PROMPT_LIMIT, "[%s@%s %s] %c ", user, host, pwd, '%');
+    snprintf(prompt, PROMPT_LIMIT, "[%s@%s %s] %c ", k_user, host, pwd, '%');
+
+    free(host);
+    free(pwd);
 }
 
 
@@ -128,7 +138,7 @@ main( /*const int   argc    ,
 
     do
     {
-        char prompt[ PROMPT_LIMIT ];
+        char *prompt = (char *) allocate(PROMPT_LIMIT, sizeof(char));
 
         // reset(); style(BOLD, RED);  //Only for differentiating from original terminal
         
@@ -141,9 +151,9 @@ main( /*const int   argc    ,
 
         status = execute(command, options);
 
-        free(receive);
-        free(command);
-        free(options);
+        // free(receive);
+        // free(command);
+        // free(options);
     }
     while (status);
 
