@@ -4,9 +4,9 @@
  * @brief 
  * @version 0.1
  * @date 2021-02-21
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -71,7 +71,7 @@ close_file( FILE *file_ptr )
  * @param input 
  */
 void
-add_input_to_history( char *input )
+add_input_to_history( const char *input )
 {
     FILE *history_ptr = open_file(get_history_path(), "a");
 

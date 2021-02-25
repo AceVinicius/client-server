@@ -4,9 +4,9 @@
  * @brief 
  * @version 0.1
  * @date 2021-02-21
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -16,119 +16,117 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "../../lib/include/execute.h"
 #include "../../lib/include/history.h"
+#include "../../lib/include/list.h"
+#include "../../lib/include/execute.h"
 
 
 
-// TODO: Rewrite this function with a better approach
-int
-execute( char **command ,
-         char **options )
+static inline int  cmp           ( const char *str1 ,const char *str2 );
+static int         read_command  ( const char * );
+
+
+
+static inline int
+cmp( const char *str1 ,
+     const char *str2 )
 {
-    if (command[ 0 ] == NULL)
-    {
-        return CONTINUE_CLIENT;
-    }
-    else if (!strcmp(command[ 0 ], "exit"))
-    {
-        return EXIT_CLIENT;
-    }
-    else
-    {
-    // 	if (!strcmp(command[ 0 ], "cd"))
-    // 	{
-    // 		return cd(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "ls"))
-    // 	{
-    // 		return ls(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "wc"))
-    // 	{
-    // 		return wc(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "mv"))
-    // 	{
-    // 		return mv(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "rm"))
-    // 	{
-    // 		return rm(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "cp"))
-    // 	{
-    // 		return cp(command,
-    // 			      options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "cat"))
-    // 	{
-    // 		return cat(command,
-    // 			       options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "pwd"))
-    // 	{
-    // 		const int var = pwd(options);
-    // 		puts("");
-    // 		return var;
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "tail"))
-    // 	{
-    // 		return tail(command,
-    // 			        options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "diff"))
-    // 	{
-    // 		return diff(command,
-    // 			        options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "help"))
-    // 	{
-    // 		return help(command,
-    // 			        options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "echo"))
-    // 	{
-    // 		return echo(command,
-    // 			        options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "head"))
-    // 	{
-    // 		return head(command,
-    // 			        options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "mkdir"))
-    // 	{
-    // 		return mk_dir(command,
-    // 			          options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "rmdir"))
-    // 	{
-    // 		return rm_dir(command,
-    // 			          options);
-    // 	}
-    // 	if (!strcmp(command[ 0 ], "touch")) {
-    // 		return touch(command,
-    // 			         options,
-    // 					 direction);
-    // 	}
-        if (!strcmp(command[ 0 ], "history"))
-        {
-            if (history() == EXIT_FAILURE)
-            {
-                // TODO: Do something if an error occurs
-            }
+    return !strcmp(str1, str2);
+}
 
-            return CONTINUE_CLIENT;
-        }
+
+
+static int
+read_command( const char *command )
+{
+    if (command == EMPTY_CMD)
+    {
+        return EMPTY_CMD_ID;
+    }
+    else if (cmp(command, EXIT_CMD))
+    {
+        return EXIT_CMD_ID;
+    }
+    else if (cmp(command, HISTORY_CMD))
+    {
+        return HISTORY_CMD_ID;
+    }
+    else if (cmp(command, STAT_CMD))
+    {
+        return STAT_CMD_ID;
+    }
+    else if (cmp(command, REMOVE_CMD))
+    {
+        return REMOVE_CMD_ID;
+    }
+    else if (cmp(command, SEND_CMD))
+    {
+        return SEND_CMD_ID;
+    }
+    else if (cmp(command, FETCH_CMD))
+    {
+        return FETCH_CMD_ID;
+    }
+    else if (cmp(command, LS_CMD))
+    {
+        return LS_CMD_ID;
+    }
+    else if (cmp(command, CD_CMD))
+    {
+        return CD_CMD_ID;
     }
     
-    fprintf(stderr, "client: command not found: %s\n", command[ 0 ]);
+    return UNKNOWN_CMD_ID;
+}
+
+
+
+int
+execute( LIST *command )
+{
+    const int cmd_id = read_command(command->command);
+    int error = 0;
+    
+    switch (cmd_id)
+    {
+        case EMPTY_CMD_ID:
+            break;
+            
+        case EXIT_CMD_ID:
+            return EXIT_CLIENT;
+            break;
+            
+        case HISTORY_CMD_ID:
+            error = history();
+            break;
+        
+        case STAT_CMD_ID:
+            break;
+            
+        case REMOVE_CMD_ID:
+            break;
+        
+        case SEND_CMD_ID:
+            break;
+            
+        case FETCH_CMD_ID:
+            break;
+            
+        case LS_CMD_ID:
+            break;
+            
+        case CD_CMD_ID:
+            break;
+            
+        default:
+            fprintf(stderr, "client: command not found: %s\n", command->command);
+            break;
+    }
+
+    if (error)
+    {
+        // TODO: Do something
+    }
 
     return CONTINUE_CLIENT;
 }

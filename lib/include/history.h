@@ -9,7 +9,7 @@
 
 FILE *  open_file             ( const char *, const char * );
 void    close_file            ( FILE * );
-void    add_input_to_history  ( char * );
+void    add_input_to_history  ( const char * );
 char *  get_history_path      ( void );
 int     history               ( void );
 

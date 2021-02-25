@@ -8,7 +8,7 @@
 
 
 
-char ***  parse  ( char * );
+void  parse  ( LIST *, char * );
 
 
 

@@ -3,7 +3,7 @@
 # General
 CC			= clang
 LD			= clang
-ST_AN       = scan-build #--force-analyze-debug-code -internal-stats --view -stats -internal-stats -enable-checker security.insecureAPI.strcpy -enable-checker security.insecureAPI.rand -enable-checker security.insecureAPI.decodeValueOfObjCType
+ST_AN       = #scan-build --force-analyze-debug-code -internal-stats --view -stats -internal-stats -enable-checker security.insecureAPI.strcpy -enable-checker security.insecureAPI.rand -enable-checker security.insecureAPI.decodeValueOfObjCType
 DBG         = #gdb
 RM			= rm -rdf
 SHELL       = /bin/zsh
@@ -62,7 +62,11 @@ directories:
 
 # Linker
 $(BIN_FILE): $(OBJ_FILES)
-	@echo '\n\n---------------------- LINKER\n\n'
+	@echo ''
+	@echo ''
+	@echo '---------------------- LINKER'
+	@echo ''
+	@echo ''
 	
 	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
 
@@ -70,21 +74,33 @@ $(BIN_FILE): $(OBJ_FILES)
 objs: $(OBJ_FILES)
 
 $(OBJ_DIR)/%.o:*/*/%.c
-	@echo '\n\n---------------------- COMPILER:' $< '\n\n'
-	
+	@echo ''
+	@echo ''
+	@echo '---------------------- COMPILER:' $<
+	@echo ''
+	@echo ''
+
 	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
 
 # Run
 execute:
-	@echo '\n\n---------------------- RUN\n\n'
+	@echo ''
+	@echo ''
+	@echo '---------------------- RUN'
+	@echo ''
+	@echo ''
 
 	$(DBG) ./bin/client
 
 
 # Install
 install: $(BIN_FILE)
-	@echo '\n\n---------------------- INSTALLER\n\n'
+	@echo ''
+	@echo ''
+	@echo '---------------------- INSTALLER'
+	@echo ''
+	@echo ''
 	
 	$(INSTALL) -d $(PREFIX)/bin
 	$(INSTALL) $(BIN_FILE) $(PREFIX)/bin
@@ -96,7 +112,11 @@ remake: clean all
 
 # Clean
 clean:
-	@echo '\n\n---------------------- CLEANER\n\n'
+	@echo ''
+	@echo ''
+	@echo '---------------------- CLEANER'
+	@echo ''
+	@echo ''
 
 	$(RM) $(OBJ_DIR) $(BIN_DIR)
 

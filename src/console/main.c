@@ -4,9 +4,9 @@
  * @brief 
  * @version 0.1
  * @date 2021-02-20
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "../../lib/include/list.h"
 #include "../../lib/include/client.h"
 #include "../../lib/include/history.h"
 #include "../../lib/include/parse.h"
@@ -100,7 +101,7 @@ build_prompt( char *prompt )
         pwd = strdup(strrchr(k_pwd, '/') + 1);
     }
 
-    snprintf(prompt, PROMPT_LIMIT, "[%s@%s %s] %c ", k_user, host, pwd, '%');
+    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", k_user, host, pwd, '%');
 
     free(host);
     free(pwd);
@@ -109,7 +110,7 @@ build_prompt( char *prompt )
 
 
 void
-get_user_input(char *prompt)
+get_user_input( const char *prompt )
 {
     if (input != NULL)
     {
@@ -129,8 +130,8 @@ get_user_input(char *prompt)
 
 
 int
-main( /*const int   argc    ,
-      const char **argv*/ )
+main( /* const int   argc    ,
+      const char **argv */ )
 {
     initialize_readline();
     
@@ -139,25 +140,18 @@ main( /*const int   argc    ,
     do
     {
         char *prompt = (char *) allocate(PROMPT_LIMIT, sizeof(char));
-
-        // reset(); style(BOLD, RED);  //Only for differentiating from original terminal
         
         build_prompt(prompt);
         get_user_input(prompt);
 
-        char ***receive = parse(input);
-        char  **command = *(receive + 0);
-        char  **options = *(receive + 1);
-
-        status = execute(command, options);
-
-        // free(receive);
-        // free(command);
-        // free(options);
+        LIST *command = initialize_list();
+        
+        parse(command, input);
+        status = execute(command);
+        
+        free_command(command);
     }
     while (status);
-
-    // reset();
 
     return EXIT_SUCCESS;
 }
