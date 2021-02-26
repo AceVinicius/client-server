@@ -54,9 +54,11 @@ initialize_readline( void )
     rl_initialize();
     using_history();
 
-    if (access(get_history_path(), W_OK) == 0)
+    const char *path = get_history_path();
+
+    if (access(path, W_OK) == 0)
     {
-        read_history(get_history_path());
+        read_history(path);
     }
 }
 
