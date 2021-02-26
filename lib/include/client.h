@@ -14,7 +14,7 @@
 void  initialize_readline  ( void );
 void  build_prompt         ( char * );
 void  get_user_input       ( const char * );
-int   main                 ( /* const int, const char ** */ );
+int   main                 ( void );
 
 
 
