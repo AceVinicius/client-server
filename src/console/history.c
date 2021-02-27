@@ -23,7 +23,8 @@
 /**
  * @brief Constants
  */
-const char *k_history_file_name = "/.history";
+const char *k_history_name = "/.history";
+const int k_history_size = sizeof(k_history_name)/sizeof(char);
 
 
 
@@ -101,27 +102,27 @@ get_history_path( void )
 {
     const char *home = getenv("HOME");
     size_t size = strlen(home);
-    char *history_path = (char *) allocate(size, sizeof(char));
+    char *path = (char *) allocate(size, sizeof(char));
     
-    if (strncpy(history_path, home, size+1) == NULL)
+    if (strncpy(path, home, size) == NULL)
     {
         perror("get_history_path");
         exit(EXIT_FAILURE);
     }
 
-    if (strstr(history_path, k_history_file_name) == NULL)
+    if (strstr(path, k_history_name) == NULL)
     {
-        size_t new_size = strlen(history_path) + strlen(k_history_file_name);
-        history_path = (char *) reallocate(history_path, new_size+1, sizeof(char));
+        size_t new_size = size + k_history_size;
+        path = (char *) reallocate(path, new_size, sizeof(char));
 
-        if (strncat(history_path, k_history_file_name, new_size) == NULL)
+        if (strncat(path, k_history_name, new_size) == NULL)
         {
             perror("get_history_path");
             exit(EXIT_FAILURE);
         }
     }
 
-    return history_path;
+    return path;
 }
 
 
