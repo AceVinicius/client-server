@@ -13,33 +13,20 @@
 
 
 
-#include <math.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 
 #include "../../lib/include/list.h"
+#include "../../lib/include/parse.h"
 #include "../../lib/include/client.h"
 #include "../../lib/include/history.h"
-#include "../../lib/include/parse.h"
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
-
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <fnmatch.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <glob.h>
-#include <pwd.h>
-#include <ftw.h>
 
 
 
@@ -79,44 +66,58 @@ initialize_readline( void )
 void
 build_prompt( char *prompt ) 
 {
-    const char *k_user = getenv("USER");
-    const char *k_home = getenv("HOME");
-    const char *k_pwd  = getenv("PWD");
-
-    if (k_user == NULL ||
-        k_pwd  == NULL ||
-        k_home == NULL)
+    char *user = (char *) allocate(USER_LIMIT, sizeof(char));
+    char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
+    char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
+    const char *home = getenv("HOME");
+    
+    if (home == NULL)
     {
         perror("getenv");
         exit(EXIT_FAILURE);
     }
+    
+    if (getlogin_r(user, USER_LIMIT) != 0)
+    {
+        perror("getlogin");
+        exit(EXIT_FAILURE);
+    }
 
-    char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     if (gethostname(host, HOST_LIMIT) == -1)
     {
         perror("gethostname");
         exit(EXIT_FAILURE);
     }
-
-    char *pwd = NULL;
-    
-    if (strcmp(k_pwd, k_home) == 0)
+    else
     {
-        pwd = strdup("~");
+        host = strtok(host, ".");
     }
-    else if (strcmp(k_pwd, "/") == 0)
+
+    if (getcwd(cwd, CWD_LIMIT) == NULL)
     {
-        pwd = strdup("/");
+        perror("getcwd");
+        exit(EXIT_FAILURE);
     }
     else
     {
-        pwd = strdup(strrchr(k_pwd, '/') + 1);
+        if (strcmp(cwd, home) == 0)
+        {
+            cwd = strdup("~");
+        }
+        else if (strcmp(cwd, "/") == 0)
+        {
+            cwd = strdup("/");
+        }
+        else
+        {
+            cwd = strdup(strrchr(cwd, '/') + 1);
+        }
     }
 
-    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", k_user, host, pwd, '%');
+    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", user, host, cwd, '%');
 
-    free(host);
-    free(pwd);
+    free_mem(cwd);
+    free_mem(host);
 }
 
 
@@ -131,7 +132,7 @@ get_user_input( const char *prompt )
 {
     if (input != NULL)
     {
-        free(input);
+        free_mem(input);
         input = (char *) NULL;
     }
 

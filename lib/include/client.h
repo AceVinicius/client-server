@@ -3,11 +3,10 @@
 
 
 
-# define PROMPT_LIMIT 128
-# define HOST_LIMIT    32
-
-# define STRUCT
-# define DEBUG
+# define USER_LIMIT    32
+# define HOST_LIMIT    64
+# define CWD_LIMIT     64
+# define PROMPT_LIMIT 168
 
 
 
