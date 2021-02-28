@@ -24,6 +24,7 @@
 #include "../../lib/include/list.h"
 #include "../../lib/include/parse.h"
 #include "../../lib/include/client.h"
+#include "../../lib/include/general.h"
 #include "../../lib/include/history.h"
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
@@ -69,13 +70,6 @@ build_prompt( char *prompt )
     char *user = (char *) allocate(USER_LIMIT, sizeof(char));
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
-    const char *home = getenv("HOME");
-    
-    if (home == NULL)
-    {
-        perror("getenv");
-        exit(EXIT_FAILURE);
-    }
     
     if (getlogin_r(user, USER_LIMIT) != 0)
     {
@@ -100,7 +94,7 @@ build_prompt( char *prompt )
     }
     else
     {
-        if (strcmp(cwd, home) == 0)
+        if (strcmp(cwd, gethome()) == 0)
         {
             cwd = strdup("~");
         }
