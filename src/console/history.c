@@ -1,7 +1,9 @@
 /**
  * @file history.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * @brief Do operations with the history file
+ * 
+ * @brief Do operations with the history file.
+ * 
  * @version 0.1
  * @date 2021-02-21
  *
@@ -29,12 +31,12 @@ const int k_history_size = sizeof(k_history_name)/sizeof(char);
 
 
 /**
- * @brief Opens any kind of file
+ * @brief Opens any kind of file.
  * 
- * @param file The name of the file
- * @param mode The mode which the file will be opened
+ * @param file The name of the file.
+ * @param mode The mode which the file will be opened.
  * 
- * @return FILE* A pointer to the opened file
+ * @return FILE* A pointer to the opened file.
  */
 FILE *
 open_file( const char *file ,
@@ -53,9 +55,9 @@ open_file( const char *file ,
 
 
 /**
- * @brief Closes a file pointer
+ * @brief Closes a file pointer.
  * 
- * @param ptr The file to be closed
+ * @param ptr The file to be closed.
  */
 void
 close_file( FILE *ptr )
@@ -70,9 +72,9 @@ close_file( FILE *ptr )
 
 
 /**
- * @brief Print a string to the history file
+ * @brief Print a string to the history file.
  * 
- * @param input The string to be printed in the file
+ * @param input The string to be printed in the file.
  */
 void
 add_input_to_history( const char *input )
@@ -96,10 +98,9 @@ add_input_to_history( const char *input )
 
 
 /**
- * @brief Get the full path of the history
+ * @brief Get the full path of the history.
  * 
- * @return char* Returns a string with the full path of the
- *               history file
+ * @return char* Returns a string with the full path of the history file.
  */
 char *
 get_history_path( void )
@@ -132,10 +133,9 @@ get_history_path( void )
 
 
 /**
- * @brief Prints all the information in the history file, 
- *        formatted.
+ * @brief Prints all the information in the history file, formatted.
  * 
- * @return int Returns 0 if success or 1 if failure
+ * @return int Returns 0 if success or 1 if failure.
  */
 int
 history( void )

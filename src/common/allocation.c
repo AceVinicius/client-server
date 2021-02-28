@@ -1,7 +1,9 @@
 /**
  * @file allocation.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * @brief 
+ * 
+ * @brief Do dynamic memory aperations with ease around all project.
+ * 
  * @version 0.1
  * @date 2021-02-22
  *
@@ -18,6 +20,13 @@
 
 
 
+/**
+ * @brief Allocate dynamic memory with calloc and check pointer.
+ * 
+ * @param size Quantity of blocks desired.
+ * @param type The size of each block.
+ * @return void* Returns the address of the allocated block.
+ */
 void *
 allocate( const size_t size ,
           const size_t type )
@@ -34,6 +43,14 @@ allocate( const size_t size ,
 
 
 
+/**
+ * @brief Reallocate a dynamic block previously allocated.
+ * 
+ * @param ptr Old block of memory.
+ * @param new_size New quantity of blocks.
+ * @param type Size of each block.
+ * @return void* Returns the address of the new allocated block.
+ */
 void *
 reallocate(       void   *ptr      ,
             const size_t  new_size ,

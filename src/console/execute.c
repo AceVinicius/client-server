@@ -27,6 +27,13 @@ static int         read_command  ( const char * );
 
 
 
+/**
+ * @brief Campare two words to see if they are equal
+ * 
+ * @param str1 Word 1
+ * @param str2 Word 2
+ * @return int Returns 1 if they are equal and 0 if not
+ */
 static inline int
 cmp( const char *str1 ,
      const char *str2 )
@@ -36,6 +43,12 @@ cmp( const char *str1 ,
 
 
 
+/**
+ * @brief Receive a word and returns an id
+ * 
+ * @param command Word to be identified
+ * @return int ID of the command
+ */
 static int
 read_command( const char *command )
 {
@@ -81,6 +94,13 @@ read_command( const char *command )
 
 
 
+/**
+ * @brief Call the proper function based in the user input
+ * 
+ * @param command List of operation and parameters
+ * @return int Returns true if the program will run again or 0 if user wants
+ *             to terminate
+ */
 int
 execute( LIST *command )
 {

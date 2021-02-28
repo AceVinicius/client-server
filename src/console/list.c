@@ -1,7 +1,9 @@
 /**
- * @file history.c
+ * @file list.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * @brief
+ * 
+ * @brief Do operations with the LIST.
+ * 
  * @version 0.1
  * @date 2021-02-25
  *
@@ -19,11 +21,16 @@
 
 
 
-static void    free_option      ( OPTION * );
-static void    free_argument    ( ARGUMENT * );
+static void  free_option    ( OPTION * );
+static void  free_argument  ( ARGUMENT * );
 
 
 
+/**
+ * @brief Allocate and initialize the list.
+ * 
+ * @return LIST* Returns the address of the created list.
+ */
 LIST *
 initialize_list( void )
 {
@@ -40,6 +47,12 @@ initialize_list( void )
 
 
 
+/**
+ * @brief Insert a node in option head.
+ * 
+ * @param command The address of the list.
+ * @param token The token to be inserted in the list.
+ */
 void
 insert_option( LIST *command ,
                char *token   )
@@ -62,6 +75,12 @@ insert_option( LIST *command ,
 
 
 
+/**
+ * @brief Insert a node in argument head.
+ * 
+ * @param command The address of the list.
+ * @param token The token to be inserted in the list.
+ */
 void
 insert_argument( LIST *command ,
                  char *token   )
@@ -83,6 +102,12 @@ insert_argument( LIST *command ,
 }
 
 
+
+/**
+ * @brief Frees the entire list.
+ * 
+ * @param command Address of the list.
+ */
 void
 free_command( LIST *command )
 {
@@ -100,6 +125,11 @@ free_command( LIST *command )
 
 
 
+/**
+ * @brief Free option nodes.
+ * 
+ * @param options Node to be freed.
+ */
 static void
 free_option( OPTION *options )
 {
@@ -116,6 +146,11 @@ free_option( OPTION *options )
 
 
 
+/**
+ * @brief Free argument nodes.
+ * 
+ * @param arguments  Node to be freed.
+ */
 static void
 free_argument( ARGUMENT *arguments )
 {
