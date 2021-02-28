@@ -25,7 +25,7 @@
 /**
  * @brief Constants
  */
-const char *k_history_name = "/.history";
+const char k_history_name[ ] = "/.history";
 const int k_history_size = sizeof(k_history_name)/sizeof(char);
 
 
