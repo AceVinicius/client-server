@@ -16,8 +16,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+
 #include "../../lib/include/history.h"
 #include "../../lib/include/list.h"
+#include "../../lib/include/cd.h"
 #include "../../lib/include/execute.h"
 
 
@@ -104,7 +106,9 @@ read_command( const char *command )
 int
 execute( LIST *command )
 {
-    const int cmd_id = read_command(command->command);
+    const char *cmd = command->command;
+    const int cmd_id = read_command(cmd);
+    
     int error = 0;
     
     switch (cmd_id)
@@ -136,10 +140,11 @@ execute( LIST *command )
             break;
             
         case CD_CMD_ID:
+            error = cd(command);
             break;
             
         default:
-            fprintf(stderr, "client: command not found: %s\n", command->command);
+            fprintf(stderr, "client: command not found: %s\n", cmd);
             break;
     }
 

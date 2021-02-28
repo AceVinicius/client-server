@@ -1,41 +1,51 @@
-// # include "../lib/headers/include.h"
-// # include "../lib/headers/define.h"
-// # include "../lib/headers/global_variables.h"
-// # include "../lib/headers/style.h"
-// # include "../lib/headers/command.h"
-// # include "../lib/headers/input.h"
+/**
+ * @file cd.c
+ * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
+ * 
+ * @brief Change current working directory.
+ * 
+ * @version 0.1
+ * @date 2021-02-28
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 
 
 
-// int
-// cd(char **command,
-//    char **options,
-//    char **direction)
-// {
-// 	if (command[ 1 ] == NULL)
-// 	{
-// 		unsigned int   uid = getuid();
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-// 		struct passwd *pwd = getpwuid(uid);
-// 		if (!pwd)
-// 		{
-// 			fprintf(stderr, "bash: User with %u ID is unknown.\n", uid);
-// 			return 2;
-// 		}
+#include "../../lib/include/list.h"
+#include "../../lib/include/cd.h"
 
-// 		if (chdir(pwd -> pw_dir))
-// 		{
-// 			fprintf(stderr, "Unable to change directory to '%s'\n", pwd -> pw_dir);
-// 			return 2;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		if (chdir(command[ 1 ]))
-// 		{
-// 			fprintf(stderr, "bash: cd: %s: No such file or directory\n", command[ 1 ]);
-// 			return 2;
-// 		}
-// 	}
-// 	return 1;
-// }
+
+
+/**
+ * @brief Changes current working directory.
+ * 
+ * @param command Directory to be changed.
+ * @return int Returns 1 if success.
+ */
+int
+cd( const LIST *command )
+{
+    if (command == NULL)
+    {
+        fprintf(stderr, "cd");
+        exit(EXIT_FAILURE);
+    }
+
+    char *directory = (
+        command->qtd_arguments == 0 ?
+            getenv("HOME") : command->arguments->argument
+    );
+
+    if (chdir(directory))
+    {
+        fprintf(stderr, "cd: %s: No such file or directory\n", directory);
+    }
+
+	return EXIT_SUCCESS;
+}
