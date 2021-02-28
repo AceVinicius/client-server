@@ -79,12 +79,10 @@ void
 build_prompt( char *prompt ) 
 {
     const char *k_user = getenv("USER");
-    // const char *k_host = getenv("HOST");  // !BUG -> (null) host value
     const char *k_home = getenv("HOME");
     const char *k_pwd  = getenv("PWD");
 
     if (k_user == NULL ||
-        // k_host == NULL ||
         k_pwd  == NULL ||
         k_home == NULL)
     {
@@ -99,7 +97,7 @@ build_prompt( char *prompt )
         exit(EXIT_FAILURE);
     }
 
-    char *pwd = NULL; // (char *) allocate(strlen(k_pwd), sizeof(char));
+    char *pwd = NULL;
     
     if (strcmp(k_pwd, k_home) == 0)
     {
