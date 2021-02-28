@@ -19,6 +19,7 @@
 
 #include "../../lib/include/history.h"
 #include "../../lib/include/allocation.h"
+#include "../../lib/include/files.h"
 
 
 
@@ -27,47 +28,6 @@
  */
 const char k_history_name[ ] = "/.history";
 const int k_history_size = sizeof(k_history_name)/sizeof(char);
-
-
-
-/**
- * @brief Opens any kind of file.
- * 
- * @param file The name of the file.
- * @param mode The mode which the file will be opened.
- * 
- * @return FILE* A pointer to the opened file.
- */
-FILE *
-open_file( const char *file ,
-           const char *mode )
-{
-    FILE *ptr = fopen(file, mode);
-    if (ptr == NULL)
-    {
-        perror("open_file");
-        exit(EXIT_FAILURE);
-    }
-
-    return ptr;
-}
-
-
-
-/**
- * @brief Closes a file pointer.
- * 
- * @param ptr The file to be closed.
- */
-void
-close_file( FILE *ptr )
-{
-    if (fclose(ptr) == EOF)
-    {
-        perror("close_file");
-        exit(EXIT_FAILURE);
-    }
-}
 
 
 
