@@ -31,14 +31,14 @@ void *
 allocate( const size_t size ,
           const size_t type )
 {
-    void *new_ptr = calloc((size + 1), type);
+    void *new_ptr = (void *) calloc((size + 1), type);
     if (new_ptr == NULL)
     {
         perror("allocate");
         exit(EXIT_FAILURE);
     }
 
-    return new_ptr;
+    return (void *) new_ptr;
 }
 
 
@@ -61,12 +61,12 @@ reallocate(       void   *ptr      ,
         exit(EXIT_FAILURE);
     }
 
-    void *new_ptr = realloc(ptr, (new_size + 1) * type);
+    void *new_ptr = (void *) realloc(ptr, (new_size + 1) * type);
     if (new_ptr == NULL)
     {
         perror("reallocate");
         exit(EXIT_FAILURE);
     }
 
-    return new_ptr;
+    return (void *) new_ptr;
 }
