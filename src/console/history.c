@@ -1,7 +1,7 @@
 /**
  * @file history.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * @brief 
+ * @brief Do operations with the history file
  * @version 0.1
  * @date 2021-02-21
  *
