@@ -49,7 +49,7 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
+    # - name: Autobuild
       uses: github/codeql-action/autobuild@v1
 
     # ℹ️ Command-line programs to run using the OS shell.
@@ -60,7 +60,7 @@ jobs:
     #    uses a compiled language
 
     #- run: |
-    #   make bootstrap
+      make remake
     #   make release
 
     - name: Perform CodeQL Analysis
