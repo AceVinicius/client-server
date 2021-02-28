@@ -70,3 +70,18 @@ reallocate(       void   *ptr      ,
 
     return (void *) new_ptr;
 }
+
+
+
+void
+free_mem( void *ptr )
+{
+    if (ptr == NULL)
+    {
+        perror("free_mem");
+        exit(EXIT_FAILURE);
+    }
+
+    free(ptr);
+    ptr = NULL;
+}
