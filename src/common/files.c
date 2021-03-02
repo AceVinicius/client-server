@@ -1,6 +1,6 @@
 /**
  * @file files.c
- * @author your name (you@domain.com)
+ * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
  *
  * @brief Do files operations
  *
