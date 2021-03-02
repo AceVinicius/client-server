@@ -1,14 +1,14 @@
 /**
  * @file general.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief 
- * 
+ *
  * @version 0.1
  * @date 2021-02-28
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -20,8 +20,8 @@
 
 /**
  * @brief 
- * 
- * @return char* 
+ *
+ * @return char*
  */
 char *
 gethome( void )

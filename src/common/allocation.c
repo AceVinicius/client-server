@@ -1,9 +1,9 @@
 /**
  * @file allocation.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief Do dynamic memory aperations with ease around all project.
- * 
+ *
  * @version 0.1
  * @date 2021-02-22
  *
@@ -22,7 +22,7 @@
 
 /**
  * @brief Allocate dynamic memory with calloc and check pointer.
- * 
+ *
  * @param size Quantity of blocks desired.
  * @param type The size of each block.
  * @return void* Returns the address of the allocated block.

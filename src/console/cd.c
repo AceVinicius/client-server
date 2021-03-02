@@ -1,14 +1,14 @@
 /**
  * @file cd.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief Change current working directory.
- * 
+ *
  * @version 0.1
  * @date 2021-02-28
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -47,5 +47,5 @@ cd( const LIST *command )
         fprintf(stderr, "cd: %s: No such file or directory\n", directory);
     }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

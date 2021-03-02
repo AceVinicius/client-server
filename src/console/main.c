@@ -1,9 +1,9 @@
 /**
  * @file main.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief Controls the main flux of the client app.
- * 
+ *
  * @version 0.1
  * @date 2021-02-20
  *
@@ -61,7 +61,7 @@ initialize_readline( void )
 
 /**
  * @brief Builds the string before the user input.
- * 
+ *
  * @param prompt The string to save the builded prompt.
  */
 void
@@ -70,7 +70,7 @@ build_prompt( char *prompt )
     char *user = (char *) allocate(USER_LIMIT, sizeof(char));
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
-    
+
     if (getlogin_r(user, USER_LIMIT) != 0)
     {
         perror("getlogin");
@@ -118,7 +118,7 @@ build_prompt( char *prompt )
 
 /**
  * @brief Get the user input and add to history if it's not empty.
- * 
+ *
  * @param prompt Prompt formatted for print before user input.
  */
 void
@@ -145,21 +145,21 @@ int
 main( void )
 {
     initialize_readline();
-    
+
     bool status = true;
 
     do
     {
         char *prompt = (char *) allocate(PROMPT_LIMIT, sizeof(char));
-        
+
         build_prompt(prompt);
         get_user_input(prompt);
 
         LIST *command = initialize_list();
-        
+
         parse(command, input);
         status = execute(command);
-        
+
         free_command(command);
     }
     while (status);

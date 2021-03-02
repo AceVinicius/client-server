@@ -1,9 +1,9 @@
 /**
  * @file list.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief Do operations with the LIST.
- * 
+ *
  * @version 0.1
  * @date 2021-02-25
  *
@@ -28,20 +28,20 @@ static void  free_argument  ( ARGUMENT * );
 
 /**
  * @brief Allocate and initialize the list.
- * 
+ *
  * @return LIST* Returns the address of the created list.
  */
 LIST *
 initialize_list( void )
 {
     LIST *new_list = (LIST *) allocate(1, sizeof(LIST));
-    
+
     new_list->command       = NULL;
     new_list->options       = NULL;
     new_list->arguments     = NULL;
     new_list->qtd_options   = 0;
     new_list->qtd_arguments = 0;
-    
+
     return new_list;
 }
 
@@ -49,7 +49,7 @@ initialize_list( void )
 
 /**
  * @brief Insert a node in option head.
- * 
+ *
  * @param command The address of the list.
  * @param token The token to be inserted in the list.
  */
@@ -77,7 +77,7 @@ insert_option( LIST *command ,
 
 /**
  * @brief Insert a node in argument head.
- * 
+ *
  * @param command The address of the list.
  * @param token The token to be inserted in the list.
  */
@@ -89,15 +89,15 @@ insert_argument( LIST *command ,
     {
         return;
     }
-    
+
     ARGUMENT *new_argument = (ARGUMENT *) allocate(1, sizeof(ARGUMENT));
-    
+
     new_argument->argument = token;
     new_argument->next = command->arguments;
-    
+
     command->arguments = new_argument;
     ++command->qtd_arguments;
-    
+
     return;
 }
 
@@ -105,7 +105,7 @@ insert_argument( LIST *command ,
 
 /**
  * @brief Frees the entire list.
- * 
+ *
  * @param command Address of the list.
  */
 void
@@ -115,11 +115,11 @@ free_command( LIST *command )
     {
         return;
     }
-    
+
     free_option(command->options);
     free_argument(command->arguments);
     free(command);
-    
+
     return;
 }
 
@@ -127,7 +127,7 @@ free_command( LIST *command )
 
 /**
  * @brief Free option nodes.
- * 
+ *
  * @param options Node to be freed.
  */
 static void
@@ -137,10 +137,10 @@ free_option( OPTION *options )
     {
         return;
     }
-    
+
     free_option(options->next);
     free(options);
-    
+
     return;
 }
 
@@ -158,9 +158,9 @@ free_argument( ARGUMENT *arguments )
     {
         return;
     }
-    
+
     free_argument(arguments->next);
     free(arguments);
-    
+
     return;
 }

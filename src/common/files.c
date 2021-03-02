@@ -1,14 +1,14 @@
 /**
  * @file files.c
  * @author your name (you@domain.com)
- * 
+ *
  * @brief Do files operations
- * 
+ *
  * @version 0.1
  * @date 2021-02-28
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 
@@ -22,10 +22,10 @@
 
 /**
  * @brief Opens any kind of file.
- * 
+ *
  * @param file The name of the file.
  * @param mode The mode which the file will be opened.
- * 
+ *
  * @return FILE* A pointer to the opened file.
  */
 FILE *
@@ -46,7 +46,7 @@ open_file( const char *file ,
 
 /**
  * @brief Closes a file pointer.
- * 
+ *
  * @param ptr The file to be closed.
  */
 void

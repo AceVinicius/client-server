@@ -33,7 +33,7 @@
 
 /**
  * @brief Tokenize the user input.
- * 
+ *
  * @param command A list to store the tokens from user input.
  * @param input User input string.
  */
@@ -42,9 +42,9 @@ parse( LIST *command ,
        char *input   )
 {
     command->command = strtok(input, WHITESPACE);
-    
+
     char *token = strtok(NULL, WHITESPACE);
-    
+
     while (token != NULL)
     {
         if (token[ 0 ] == '-')
@@ -55,9 +55,9 @@ parse( LIST *command ,
         {
             insert_argument(command, token);
         }
-        
+
         token = strtok(NULL, WHITESPACE);
     }
-    
+
     return;
 }

@@ -1,7 +1,7 @@
 /**
  * @file history.c
  * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
- * 
+ *
  * @brief Do operations with the history file.
  * 
  * @version 0.1
@@ -33,7 +33,7 @@ const int k_history_size = sizeof(k_history_name)/sizeof(char);
 
 /**
  * @brief Print a string to the history file.
- * 
+ *
  * @param input The string to be printed in the file.
  */
 void
@@ -59,7 +59,7 @@ add_input_to_history( const char *input )
 
 /**
  * @brief Get the full path of the history.
- * 
+ *
  * @return char* Returns a string with the full path of the history file.
  */
 char *
@@ -68,7 +68,7 @@ get_history_path( void )
     const char *home = getenv("HOME");
     size_t size = strlen(home);
     char *path = (char *) allocate(size, sizeof(char));
-    
+
     if (strncpy(path, home, size) == NULL)
     {
         perror("get_history_path");
@@ -94,7 +94,7 @@ get_history_path( void )
 
 /**
  * @brief Prints all the information in the history file, formatted.
- * 
+ *
  * @return int Returns 0 if success or 1 if failure.
  */
 int
@@ -103,7 +103,7 @@ history( void )
     FILE *history = open_file(get_history_path(), "r");
 
     char buffer[ HISTORY_LIMIT ];
-    
+
     for (size_t i = 1; !feof(history); i++)
     {
         if (fgets(buffer, HISTORY_LIMIT, history) != NULL)
@@ -119,7 +119,7 @@ history( void )
             }
         }
     }
-    
+
     close_file(history);
 
     return EXIT_SUCCESS;

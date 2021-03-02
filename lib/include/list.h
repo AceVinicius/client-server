@@ -6,10 +6,8 @@
 struct list
 {
     char *command;              // 8 bytes
-    
     struct option *options;     // 8 bytes
     struct argument *arguments; // 8 bytes
-    
     int qtd_options;            // 4 bytes
     int qtd_arguments;          // 4 bytes
 };
@@ -17,15 +15,13 @@ struct list
 struct option
 {
     struct option *next; // 8 bytes
-    
-    char *option;      // 8 bytes
+    char *option;        // 8 bytes
 };
 
 struct argument
 {
     struct argument *next; // 8 bytes
-    
-    char *argument;      // 8 bytes
+    char *argument;        // 8 bytes
 };
 
 

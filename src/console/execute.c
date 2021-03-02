@@ -31,7 +31,7 @@ static int         read_command  ( const char * );
 
 /**
  * @brief Campare two words to see if they are equal
- * 
+ *
  * @param str1 Word 1
  * @param str2 Word 2
  * @return int Returns 1 if they are equal and 0 if not
@@ -47,7 +47,7 @@ cmp( const char *str1 ,
 
 /**
  * @brief Receive a word and returns an id
- * 
+ *
  * @param command Word to be identified
  * @return int ID of the command
  */
@@ -90,7 +90,7 @@ read_command( const char *command )
     {
         return CD_CMD_ID;
     }
-    
+
     return UNKNOWN_CMD_ID;
 }
 
@@ -98,7 +98,7 @@ read_command( const char *command )
 
 /**
  * @brief Call the proper function based in the user input
- * 
+ *
  * @param command List of operation and parameters
  * @return int Returns true if the program will run again or 0 if user wants
  *             to terminate
@@ -108,41 +108,41 @@ execute( LIST *command )
 {
     const char *cmd = command->command;
     const int cmd_id = read_command(cmd);
-    
+
     int error = 0;
-    
+
     switch (cmd_id)
     {
         case EMPTY_CMD_ID:
             break;
-            
+
         case EXIT_CMD_ID:
             return EXIT_CLIENT;
             break;
-            
+
         case HISTORY_CMD_ID:
             error = history();
             break;
-        
+
         case STAT_CMD_ID:
             break;
-            
+
         case REMOVE_CMD_ID:
             break;
-        
+
         case SEND_CMD_ID:
             break;
-            
+
         case FETCH_CMD_ID:
             break;
-            
+
         case LS_CMD_ID:
             break;
-            
+
         case CD_CMD_ID:
             error = cd(command);
             break;
-            
+
         default:
             fprintf(stderr, "client: command not found: %s\n", cmd);
             break;
