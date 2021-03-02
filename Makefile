@@ -1,67 +1,88 @@
 # -*- Makefile -*-
+#
+# Make Target:
+# ------------
+# The Makefile provides the following targets to make:
+#   $ make           compile and link
+#   $ make objs      compile only (no linking)
+#   $ make client    compile and link client only
+#   $ make server    compile and link server only
+#   $ make remake    clean objects, the executable and dependencies
+#   $ make help      get the usage of the makefile
+#   $ make show      print variables for debug purposes
 
-# General
-CC			= clang
-LD			= clang
-ST_AN       = #scan-build --force-analyze-debug-code -internal-stats --view -stats -internal-stats -enable-checker security.insecureAPI.strcpy -enable-checker security.insecureAPI.rand -enable-checker security.insecureAPI.decodeValueOfObjCType
-DBG         = #gdb
-RM			= rm -rdf
-SHELL       = /bin/zsh
-INSTALL		= install
-DEBUG       = -O3 -g3
-WARNING     = -Wall -Wextra -Wpedantic
+###############################################################################
+###                           CUSTOMIZABLE SECTION                          ###
+###############################################################################
 
+# Compiler #
+CC = clang
 
-## CHANGE THIS ##
-BIN_DIR	= bin
+# Linker #
+LD = clang
+
+# Static Analyzer #
+ST_AN := #scan-build --force-analyze-debug-code --view -stats -internal-stats
+ST_AN := #-enable-checker security.insecureAPI.strcpy
+ST_AN := #-enable-checker security.insecureAPI.rand
+ST_AN := #-enable-checker security.insecureAPI.decodeValueOfObjCType
+
+# Compilation Flags #
+DEBUG = -O3 -g3 -Wall -Wextra -Wpedantic
+
+# Debugger #
+DBG = #gdb
+
+# Directories #
+BIN_DIR        = bin
 CONSOLE_TARGET = client
 SERVER_TARGET  = server
 
-COMMON_SRC_DIR  = src/common
+COMMON_SRC_DIR = src/common
+COMMON_OBJ_DIR = obj/common
+COMMON_DEP_DIR = obj/common
+
 CONSOLE_SRC_DIR = src/console
-SERVER_SRC_DIR  = src/server
-
-COMMON_OBJ_DIR  = obj/common
 CONSOLE_OBJ_DIR = obj/console
-SERVER_OBJ_DIR  = obj/server
-
-COMMON_DEP_DIR  = obj/common
 CONSOLE_DEP_DIR = obj/console
-SERVER_DEP_DIR  = obj/server
-## CHANGE THIS ##
+
+SERVER_SRC_DIR = src/server
+SERVER_OBJ_DIR = obj/server
+SERVER_DEP_DIR = obj/server
 
 
 
-########################################################################
-#
-#                     Compilation Details
-#
-#########################################################################
+###############################################################################
+###                           COMPILATION DETAILS                           ###
+###############################################################################
 
-# CFLAGS, LDFLAGS, CPPFLAGS, PREFIX can be overriden on CLI
-CFLAGS		:= $(WARNING) $(DEBUG) -std=c17
-CPPFLAGS	:= -MMD -MP
-LDFLAGS		:= 
-PREFIX		:= /usr/local
+# General #
+RM      = rm -rdf
+SHELL   = /bin/zsh
+INSTALL = install
+
+# CFLAGS, LDFLAGS, CPPFLAGS, PREFIX #
+CFLAGS      := $(WARNING) $(DEBUG) -std=c17
+CPPFLAGS    := -MMD -MP
+LDFLAGS     := 
+PREFIX      := /usr/local
 TARGET_ARCH := 
 
-# Compiler Flags
+# Compiler Flags #
 ALL_CFLAGS := $(CFLAGS)
 
-# Preprocessor Flags
-ALL_CPPFLAGS	:= $(CPPFLAGS)
+# Preprocessor Flags #
+ALL_CPPFLAGS := $(CPPFLAGS)
 
-# Linker Flags
-ALL_LDFLAGS		:= $(LDFLAGS)
-ALL_LDLIBS		:= -lc -lreadline -lm
+# Linker Flags #
+ALL_LDFLAGS := $(LDFLAGS)
+ALL_LDLIBS  := -lc -lreadline -lm
 
 
 
-########################################################################
-#
-#                     Source, Binaries, Dependencies
-#
-#########################################################################
+###############################################################################
+###                           SOURCES AND BINARIES                          ###
+###############################################################################
 
 COMMON_SRC_FILES := $(shell find $(COMMON_SRC_DIR) -type f -name '*.c')
 COMMON_OBJ_FILES := $(foreach file,$(notdir $(COMMON_SRC_FILES)),$(COMMON_OBJ_DIR)/$(file:.c=.o))
@@ -78,7 +99,9 @@ SERVER_DEP_FILES := $(foreach file,$(notdir $(SERVER_SRC_FILES)),$(SERVER_DEP_DI
 CONSOLE_BIN_FILE = $(BIN_DIR)/$(CONSOLE_TARGET)
 SERVER_BIN_FILE  = $(BIN_DIR)/$(SERVER_TARGET)
 
--include $(DEP_FILES)
+-include $(COMMON_DEP_FILES)
+-include $(CONSOLE_DEP_FILES)
+-include $(SERVER_DEP_FILES)
 
 ALL_GENERATED_DIRS := $(COMMON_OBJ_DIR) $(CONSOLE_OBJ_DIR) $(SERVER_OBJ_DIR)
 ALL_GENERATED_DIRS := $(COMMON_DEP_DIR) $(CONSOLE_DEP_DIR) $(SERVER_DEP_DIR)
@@ -86,13 +109,11 @@ ALL_GENERATED_DIRS := $(BIN_DIR) obj
 
 
 
-########################################################################
-#
-#                     Build Rules
-#
-#########################################################################
+###############################################################################
+###                               BUILD RULES                               ###
+###############################################################################
 
-.PHONY: clean
+.PHONY: all common client server run start clean install remake
 .DEFAULT_GOAL := all
 
 all: common client server run
@@ -107,131 +128,103 @@ run: $(CONSOLE_TARGET)
 
 start: $(SERVER_TARGET)
 
-# Clean
+# Rebuild #
+remake: clean all
+
+# Clean #
 clean:
 	$(RM) $(ALL_GENERATED_DIRS)
 
-# Install
+# Install #
 install: $(BIN_FILE)
 	$(INSTALL) -d $(PREFIX)/bin
 	$(INSTALL) $(BIN_FILE) $(PREFIX)/bin
 
-# Rebuild
-remake: clean all
 
-########################################################################
-#
-#                     COMMON
-#
-#########################################################################
 
-# Directories
+###############################################################################
+###                                  COMMON                                 ###
+###############################################################################
+
+# Directories #
 directories_common:
 	@mkdir -p $(COMMON_OBJ_DIR)
 	@mkdir -p $(COMMON_DEP_DIR)
 	@mkdir -p $(BIN_DIR)
 
-# Objects
+# Objects #
 $(COMMON_OBJ_DIR)/%.o: */*/%.c
-	@echo ''
-	@echo ''
-	@echo '---------------------- COMMON COMPILER:' $(notdir $<)
-	@echo ''
-	@echo ''
-
 	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
 
 
-########################################################################
-#
-#                     CLIENT
-#
-#########################################################################
+###############################################################################
+###                                  CLIENT                                 ###
+###############################################################################
 
-# 
 directories_console:
+	@echo ''
+	@echo '------------------ STARTED CONSOLE COMPILATION ------------------'
+	@echo ''
 	@mkdir -p $(CONSOLE_OBJ_DIR)
 	@mkdir -p $(CONSOLE_DEP_DIR)
 
-# Linker
+# Linker #
 $(CONSOLE_BIN_FILE): $(COMMON_OBJ_FILES) $(CONSOLE_OBJ_FILES) 
-	@echo ''
-	@echo ''
-	@echo '---------------------- CONSOLE LINKER'
-	@echo ''
-	@echo ''
-	
 	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
+	@echo ''
+	@echo '----------------- CONSOLE COMPILED SUCCESSFULLY -----------------'
+	@echo ''
 
-# Object
+# Object #
 $(CONSOLE_OBJ_DIR)/%.o: */*/%.c
-	@echo ''
-	@echo ''
-	@echo '---------------------- CONSOLE COMPILER:' $(notdir $<)
-	@echo ''
-	@echo ''
-
 	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
-# Run
+# Run #
 $(CONSOLE_TARGET):
 	$(DBG) ./$(CONSOLE_BIN_FILE)
 
 
 
-########################################################################
-#
-#                     SERVER
-#
-#########################################################################
+###############################################################################
+###                                  SERVER                                 ###
+###############################################################################
 
-# 
 directories_server:
+	@echo ''
+	@echo '------------------- STARTED SERVER COMPILATION -------------------'
+	@echo ''
 	@mkdir -p $(SERVER_OBJ_DIR)
 	@mkdir -p $(SERVER_DEP_DIR)
 
-# Linker
+# Linker #
 $(SERVER_BIN_FILE): $(COMMON_OBJ_FILES) $(SERVER_OBJ_FILES)
-	@echo ''
-	@echo ''
-	@echo '---------------------- SERVER LINKER'
-	@echo ''
-	@echo ''
-	
 	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
+	@echo ''
+	@echo '------------------ SERVER COMPILED SUCCESSFULLY ------------------'
+	@echo ''
 
-# Object
+# Object #
 $(SERVER_OBJ_DIR)/%.o: */*/%.c
-	@echo ''
-	@echo ''
-	@echo '---------------------- SERVER COMPILER:' $(notdir $<)
-	@echo ''
-	@echo ''
-
 	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
-# Run
+# Run #
 $(SERVER_TARGET):
 	$(DBG) ./$(SERVER_BIN_FILE)
 
 
 
-########################################################################
-#
-#                     HELP
-#
-#########################################################################
+###############################################################################
+###                                   HELP                                  ###
+###############################################################################
 
 
 
-########################################################################
-#
-#                     DEBUG
-#
-#########################################################################
+###############################################################################
+###                                  DEBUG                                  ###
+###############################################################################
 
-# Print Variables For Debug
+# Print Variables For Debug #
 REAL_CC := $(CC)
 REAL_LD := $(LD)
 
