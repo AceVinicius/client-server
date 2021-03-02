@@ -46,7 +46,7 @@
 // 	if (getcwd(curr_dir, sizeof(curr_dir)) == NULL) {
 // 		fprintf(stderr, "bash: couldn't get current directory\n");
 
-// 		free(ptr);
+// 		free_mem(ptr);
 
 // 		exit(EXIT_FAILURE);
 // 	}
@@ -58,7 +58,7 @@
 // 	if (dp == NULL) {
 // 		fprintf(stderr, "bash: Could not open the working directory\n");
 
-// 		free(ptr);
+// 		free_mem(ptr);
 
 // 		exit(EXIT_FAILURE);
 // 	}
@@ -86,7 +86,7 @@
 // 		if (!ptr) {
 // 			fprintf(stderr, "bash: 'ptr' allocation error\n");
 
-// 			free(ptr);
+// 			free_mem(ptr);
 
 // 			exit(EXIT_FAILURE);
 // 		} else {
@@ -101,7 +101,7 @@
 // 	if (dp == NULL) {
 // 		fprintf(stderr, "bash: Could not open the working directory\n");
 
-// 		free( ptr );
+// 		free_mem( ptr );
 
 // 		exit(EXIT_FAILURE);
 // 	}
@@ -163,7 +163,7 @@
 // 			if (fd == -1) {
 // 				printf("\n Opening file/Directory failed\n");
 
-// 				free(ptr);
+// 				free_mem(ptr);
 
 // 				exit(EXIT_FAILURE);
 // 			}
@@ -200,7 +200,7 @@
 // 	}
 
 // 	puts("");
-// 	free(ptr);
+// 	free_mem(ptr);
 
 // 	return 1;
 // }

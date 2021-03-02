@@ -118,7 +118,7 @@ free_command( LIST *command )
 
     free_option(command->options);
     free_argument(command->arguments);
-    free(command);
+    free_mem(command);
 
     return;
 }
@@ -139,7 +139,7 @@ free_option( OPTION *options )
     }
 
     free_option(options->next);
-    free(options);
+    free_mem(options);
 
     return;
 }
@@ -160,7 +160,7 @@ free_argument( ARGUMENT *arguments )
     }
 
     free_argument(arguments->next);
-    free(arguments);
+    free_mem(arguments);
 
     return;
 }
