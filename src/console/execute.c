@@ -1,6 +1,6 @@
 /**
  * @file execute.c
- * @author your name (you@domain.com)
+ * @author Vinícius Aguiar (acevinicius AT icloud DOT com)
  * @brief 
  * @version 0.1
  * @date 2021-02-21
@@ -20,6 +20,7 @@
 #include "../../lib/include/history.h"
 #include "../../lib/include/list.h"
 #include "../../lib/include/cd.h"
+#include "../../lib/include/ls.h"
 #include "../../lib/include/execute.h"
 
 
@@ -137,6 +138,7 @@ execute( LIST *command )
             break;
 
         case LS_CMD_ID:
+            error = ls(command);
             break;
 
         case CD_CMD_ID:
