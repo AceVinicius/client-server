@@ -35,16 +35,16 @@ DBG = #gdb
 
 # Directories #
 BIN_DIR        = bin
-CONSOLE_TARGET = client
+CLIENT_TARGET = client
 SERVER_TARGET  = server
 
 COMMON_SRC_DIR = src/common
 COMMON_OBJ_DIR = obj/common
 COMMON_DEP_DIR = obj/common
 
-CONSOLE_SRC_DIR = src/console
-CONSOLE_OBJ_DIR = obj/console
-CONSOLE_DEP_DIR = obj/console
+CLIENT_SRC_DIR = src/console
+CLIENT_OBJ_DIR = obj/console
+CLIENT_DEP_DIR = obj/console
 
 SERVER_SRC_DIR = src/server
 SERVER_OBJ_DIR = obj/server
@@ -88,23 +88,23 @@ COMMON_SRC_FILES := $(shell find $(COMMON_SRC_DIR) -type f -name '*.c')
 COMMON_OBJ_FILES := $(foreach file,$(notdir $(COMMON_SRC_FILES)),$(COMMON_OBJ_DIR)/$(file:.c=.o))
 COMMON_DEP_FILES := $(foreach file,$(notdir $(COMMON_SRC_FILES)),$(COMMON_DEP_DIR)/$(file:.c=.d))
 
-CONSOLE_SRC_FILES := $(shell find $(CONSOLE_SRC_DIR) -type f -name '*.c')
-CONSOLE_OBJ_FILES := $(foreach file,$(notdir $(CONSOLE_SRC_FILES)),$(CONSOLE_OBJ_DIR)/$(file:.c=.o))
-CONSOLE_DEP_FILES := $(foreach file,$(notdir $(CONSOLE_SRC_FILES)),$(CONSOLE_DEP_DIR)/$(file:.c=.d))
+CLIENT_SRC_FILES := $(shell find $(CLIENT_SRC_DIR) -type f -name '*.c')
+CLIENT_OBJ_FILES := $(foreach file,$(notdir $(CLIENT_SRC_FILES)),$(CLIENT_OBJ_DIR)/$(file:.c=.o))
+CLIENT_DEP_FILES := $(foreach file,$(notdir $(CLIENT_SRC_FILES)),$(CLIENT_DEP_DIR)/$(file:.c=.d))
 
 SERVER_SRC_FILES := $(SERVER_SRC_DIR)/$(wildcard *.c) $(SERVER_SRC_DIR)/$(wildcard */*.c)
 SERVER_OBJ_FILES := $(foreach file,$(notdir $(SERVER_SRC_FILES)),$(SERVER_OBJ_DIR)/$(file:.c=.o))
 SERVER_DEP_FILES := $(foreach file,$(notdir $(SERVER_SRC_FILES)),$(SERVER_DEP_DIR)/$(file:.c=.d))
 
-CONSOLE_BIN_FILE = $(BIN_DIR)/$(CONSOLE_TARGET)
+CLIENT_BIN_FILE = $(BIN_DIR)/$(CLIENT_TARGET)
 SERVER_BIN_FILE  = $(BIN_DIR)/$(SERVER_TARGET)
 
 -include $(COMMON_DEP_FILES)
--include $(CONSOLE_DEP_FILES)
+-include $(CLIENT_DEP_FILES)
 -include $(SERVER_DEP_FILES)
 
-ALL_GENERATED_DIRS := $(COMMON_OBJ_DIR) $(CONSOLE_OBJ_DIR) $(SERVER_OBJ_DIR)
-ALL_GENERATED_DIRS := $(COMMON_DEP_DIR) $(CONSOLE_DEP_DIR) $(SERVER_DEP_DIR)
+ALL_GENERATED_DIRS := $(COMMON_OBJ_DIR) $(CLIENT_OBJ_DIR) $(SERVER_OBJ_DIR)
+ALL_GENERATED_DIRS := $(COMMON_DEP_DIR) $(CLIENT_DEP_DIR) $(SERVER_DEP_DIR)
 ALL_GENERATED_DIRS := $(BIN_DIR) obj
 
 
@@ -113,19 +113,17 @@ ALL_GENERATED_DIRS := $(BIN_DIR) obj
 ###                               BUILD RULES                               ###
 ###############################################################################
 
-.PHONY: all common client server run start clean install remake
+.PHONY: all common client server run start remake clean install common_dir
 .DEFAULT_GOAL := all
 
-all: common client server run
+all: common client server
 
-common: directories_common
+common: common_dir
 
-client: directories_console $(CONSOLE_BIN_FILE)
+client: client_start client_dir $(CLIENT_BIN_FILE) client_end
+server: server_start server_dir $(SERVER_BIN_FILE) server_end
 
-server: directories_server $(SERVER_BIN_FILE)
-
-run: $(CONSOLE_TARGET)
-
+run:   $(CLIENT_TARGET)
 start: $(SERVER_TARGET)
 
 # Rebuild #
@@ -147,7 +145,7 @@ install: $(BIN_FILE)
 ###############################################################################
 
 # Directories #
-directories_common:
+common_dir:
 	@mkdir -p $(COMMON_OBJ_DIR)
 	@mkdir -p $(COMMON_DEP_DIR)
 	@mkdir -p $(BIN_DIR)
@@ -162,27 +160,34 @@ $(COMMON_OBJ_DIR)/%.o: */*/%.c
 ###                                  CLIENT                                 ###
 ###############################################################################
 
-directories_console:
+# Start #
+client_start:
 	@echo ''
-	@echo '------------------ STARTED CONSOLE COMPILATION ------------------'
+	@echo '------------------ STARTED CLIENT COMPILATION ------------------'
 	@echo ''
-	@mkdir -p $(CONSOLE_OBJ_DIR)
-	@mkdir -p $(CONSOLE_DEP_DIR)
+
+# End #
+client_end:
+	@echo ''
+	@echo '----------------- CLIENT COMPILED SUCCESSFULLY -----------------'
+	@echo ''
+
+# Dependencies #
+client_dir:
+	@mkdir -p $(CLIENT_OBJ_DIR)
+	@mkdir -p $(CLIENT_DEP_DIR)
 
 # Linker #
-$(CONSOLE_BIN_FILE): $(COMMON_OBJ_FILES) $(CONSOLE_OBJ_FILES) 
+$(CLIENT_BIN_FILE): $(COMMON_OBJ_FILES) $(CLIENT_OBJ_FILES) 
 	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
-	@echo ''
-	@echo '----------------- CONSOLE COMPILED SUCCESSFULLY -----------------'
-	@echo ''
 
 # Object #
-$(CONSOLE_OBJ_DIR)/%.o: */*/%.c
+$(CLIENT_OBJ_DIR)/%.o: */*/%.c
 	$(ST_AN) $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c -o $@ $<
 
 # Run #
-$(CONSOLE_TARGET):
-	$(DBG) ./$(CONSOLE_BIN_FILE)
+$(CLIENT_TARGET):
+	$(DBG) ./$(CLIENT_BIN_FILE)
 
 
 
@@ -190,19 +195,26 @@ $(CONSOLE_TARGET):
 ###                                  SERVER                                 ###
 ###############################################################################
 
-directories_server:
+# Start #
+server_start:
 	@echo ''
 	@echo '------------------- STARTED SERVER COMPILATION -------------------'
 	@echo ''
+
+# End #
+server_end:
+	@echo ''
+	@echo '------------------ SERVER COMPILED SUCCESSFULLY ------------------'
+	@echo ''
+
+# Dependencies #
+server_dir:
 	@mkdir -p $(SERVER_OBJ_DIR)
 	@mkdir -p $(SERVER_DEP_DIR)
 
 # Linker #
 $(SERVER_BIN_FILE): $(COMMON_OBJ_FILES) $(SERVER_OBJ_FILES)
 	$(ST_AN) $(LD) $(ALL_LDFLAGS) $^ $(ALL_LDLIBS) -o $@
-	@echo ''
-	@echo '------------------ SERVER COMPILED SUCCESSFULLY ------------------'
-	@echo ''
 
 # Object #
 $(SERVER_OBJ_DIR)/%.o: */*/%.c
@@ -230,7 +242,7 @@ REAL_LD := $(LD)
 
 show:
 	@echo ''
-	@echo 'CONSOLE_TARGET:    ' $(CONSOLE_TARGET)
+	@echo 'CLIENT_TARGET:    ' $(CLIENT_TARGET)
 	@echo 'SERVER_TARGET:     ' $(SERVER_TARGET)
 	@echo 'CURDIR:            ' $(CURDIR)
 	@echo '-------------------'
@@ -251,9 +263,9 @@ show:
 	@echo 'COMMON_SRC_DIR:    ' $(COMMON_SRC_DIR)
 	@echo 'COMMON_OBJ_DIR:    ' $(COMMON_OBJ_DIR)
 	@echo 'COMMON_DEP_DIR:    ' $(COMMON_DEP_DIR)
-	@echo 'CONSOLE_SRC_DIR:   ' $(CONSOLE_SRC_DIR)
-	@echo 'CONSOLE_OBJ_DIR:   ' $(CONSOLE_OBJ_DIR)
-	@echo 'CONSOLE_DEP_DIR:   ' $(CONSOLE_DEP_DIR)
+	@echo 'CLIENT_SRC_DIR:   ' $(CLIENT_SRC_DIR)
+	@echo 'CLIENT_OBJ_DIR:   ' $(CLIENT_OBJ_DIR)
+	@echo 'CLIENT_DEP_DIR:   ' $(CLIENT_DEP_DIR)
 	@echo 'SERVER_SRC_DIR:    ' $(SERVER_SRC_DIR)
 	@echo 'SERVER_OBJ_DIR:    ' $(SERVER_OBJ_DIR)
 	@echo 'SERVER_DEP_DIR:    ' $(SERVER_DEP_DIR)
@@ -262,13 +274,13 @@ show:
 	@echo 'COMMON_SRC_FILES:  ' $(COMMON_SRC_FILES)
 	@echo 'COMMON_OBJ_FILES:  ' $(COMMON_OBJ_FILES)
 	@echo 'COMMON_DEP_FILES:  ' $(COMMON_DEP_FILES)
-	@echo 'CONSOLE_SRC_FILES: ' $(CONSOLE_SRC_FILES)
-	@echo 'CONSOLE_OBJ_FILES: ' $(CONSOLE_OBJ_FILES)
-	@echo 'CONSOLE_DEP_FILES: ' $(CONSOLE_DEP_FILES)
+	@echo 'CLIENT_SRC_FILES: ' $(CLIENT_SRC_FILES)
+	@echo 'CLIENT_OBJ_FILES: ' $(CLIENT_OBJ_FILES)
+	@echo 'CLIENT_DEP_FILES: ' $(CLIENT_DEP_FILES)
 	@echo 'SERVER_SRC_FILES:  ' $(SERVER_SRC_FILES)
 	@echo 'SERVER_OBJ_FILES:  ' $(SERVER_OBJ_FILES)
 	@echo 'SERVER_DEP_FILES:  ' $(SERVER_DEP_FILES)
 	@echo '-------------------'
-	@echo 'CONSOLE_BIN_FILE:  ' $(CONSOLE_BIN_FILE)
+	@echo 'CLIENT_BIN_FILE:  ' $(CLIENT_BIN_FILE)
 	@echo 'SERVER_BIN_FILE:   ' $(SERVER_BIN_FILE)
 	@echo ''
