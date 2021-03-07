@@ -112,6 +112,7 @@ build_prompt( char *prompt )
 
     free_mem(cwd);
     free_mem(host);
+    free_mem(user);
 }
 
 
