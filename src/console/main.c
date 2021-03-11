@@ -71,7 +71,7 @@ build_prompt( char *prompt )
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
 
-    if (getlogin_r(user, USER_LIMIT) != 0)
+    if (getlogin_r(user, USER_LIMIT) == 0)
     {
         perror("getlogin");
         exit(EXIT_FAILURE);
