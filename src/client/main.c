@@ -25,9 +25,14 @@
 #include "../../lib/include/parse.h"
 #include "../../lib/include/client.h"
 #include "../../lib/include/general.h"
+#include "../../lib/include/sockets.h"
 #include "../../lib/include/history.h"
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
+
+
+
+
 
 
 
