@@ -3,7 +3,9 @@
 
 
 
-char *  gethome  ( void );
+char *  gethome   ( void );
+char *  strdup    ( const char * );
+char *  strdup_f  ( char * );
 
 
 

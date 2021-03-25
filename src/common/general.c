@@ -14,8 +14,11 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
+#include "../../lib/include/allocation.h"
+#include "../../lib/include/general.h"
 
 
 /**
@@ -34,4 +37,40 @@ gethome( void )
     }
 
     return home;
+}
+
+
+
+char *
+strdup( const char *input )
+{
+    if (input == NULL)
+    {
+        return NULL;
+    }
+
+    int len = strlen(input);
+
+    char *output = (char *) allocate(len, sizeof(char));
+    output = (char *) memcpy(output, input, len);
+
+    return output;
+}
+
+
+char *
+strdup_f( char *input )
+{
+    if (input == NULL)
+    {
+        return NULL;
+    }
+
+    int len = strlen(input);
+    char *output = (char *) allocate(len, sizeof(char));
+
+    output = (char *) memcpy(output, input, len);
+    free_mem(input);
+
+    return output;
 }

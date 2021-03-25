@@ -71,7 +71,7 @@ build_prompt( char *prompt )
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
 
-    if (getlogin_r(user, USER_LIMIT) != 0)
+    if (getlogin_r(user, USER_LIMIT) == 0)
     {
         perror("getlogin");
         exit(EXIT_FAILURE);
@@ -96,15 +96,15 @@ build_prompt( char *prompt )
     {
         if (strcmp(cwd, gethome()) == 0)
         {
-            cwd = strdup("~");
+            cwd = strdup_f("~");
         }
         else if (strcmp(cwd, "/") == 0)
         {
-            cwd = strdup("/");
+            cwd = strdup_f("/");
         }
         else
         {
-            cwd = strdup(strrchr(cwd, '/') + 1);
+            cwd = strdup_f(strrchr(cwd, '/') + 1);
         }
     }
 
