@@ -25,9 +25,14 @@
 #include "../../lib/include/parse.h"
 #include "../../lib/include/client.h"
 #include "../../lib/include/general.h"
+#include "../../lib/include/sockets.h"
 #include "../../lib/include/history.h"
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
+
+
+
+
 
 
 
@@ -74,7 +79,7 @@ build_prompt( char *prompt )
     if (getlogin_r(user, USER_LIMIT) == 0)
     {
         perror("getlogin");
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
     if (gethostname(host, HOST_LIMIT) == -1)
