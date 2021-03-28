@@ -31,7 +31,7 @@ ST_AN := #-enable-checker security.insecureAPI.decodeValueOfObjCType
 DEBUG = -O3 -g3 -Wall -Wextra -Wpedantic
 
 # Debugger #
-DBG = #gdb
+DBG = gdb
 
 # Directories #
 BIN_DIR        = bin
