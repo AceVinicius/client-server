@@ -21,6 +21,7 @@
 #include "../../lib/include/general.h"
 
 
+
 /**
  * @brief 
  *
@@ -58,19 +59,17 @@ strdup( const char *input )
 }
 
 
-char *
-strdup_f( char *input )
+
+/**
+ * @brief Campare two words to see if they are equal
+ *
+ * @param str1 Word 1
+ * @param str2 Word 2
+ * @return int Returns 1 if they are equal and 0 if not
+ */
+int
+cmp( const char *str1 ,
+     const char *str2 )
 {
-    if (input == NULL)
-    {
-        return NULL;
-    }
-
-    int len = strlen(input);
-    char *output = (char *) allocate(len, sizeof(char));
-
-    output = (char *) memcpy(output, input, len);
-    free_mem(input);
-
-    return output;
+    return !strcmp(str1, str2);
 }

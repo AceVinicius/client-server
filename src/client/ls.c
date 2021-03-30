@@ -142,7 +142,6 @@ ls( LIST *command )
                 }
             }
         }
-
     }
 
     for (count = 0; count < num_files - 1; count++)

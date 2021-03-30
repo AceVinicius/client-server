@@ -3,16 +3,28 @@
 
 
 
-void    send_int       ( int, int );
-void    send_double    ( int, double );
-void    send_char      ( int, char );
-void    send_str       ( int, char * );
-int     recv_int       ( int );
-double  recv_double    ( int );
-char    recv_char      ( int );
-char *  recv_str       ( int );
-int     client_socket  ( struct sockaddr_in * );
-int     server_socket  ( struct sockaddr_in * );
-void    close_socket   ( int * );
+#include <arpa/inet.h>
+
+
+
+#define ATTEMPTS 10
+
+
+
+void    send_int       ( const int, const int );
+void    send_double    ( const int, const double );
+void    send_char      ( const int, const char );
+void    send_str       ( const int, const char * );
+int     recv_int       ( const int );
+double  recv_double    ( const int );
+char    recv_char      ( const int );
+char *  recv_str       ( const int );
+int     socket_client  ( struct sockaddr_in * );
+int     socket_server  ( struct sockaddr_in * );
+void    socket_listen  ( const int );
+int     socket_accept  ( const int, struct sockaddr_in * );
+void    socket_close   ( const int );
+
+
 
 #endif // SOCKETS_H

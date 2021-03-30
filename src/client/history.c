@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../../lib/include/history.h"
 #include "../../lib/include/allocation.h"
@@ -71,7 +72,7 @@ get_history_path( void )
 
     if (strncpy(path, home, size) == NULL)
     {
-        perror("get_history_path");
+        perror("strncpy");
         exit(EXIT_FAILURE);
     }
 
@@ -82,7 +83,7 @@ get_history_path( void )
 
         if (strncat(path, k_history_name, new_size) == NULL)
         {
-            perror("get_history_path");
+            perror("strncat");
             exit(EXIT_FAILURE);
         }
     }
@@ -115,12 +116,12 @@ history( void )
             if (ferror(history))
             {
                 printf("history: reading error at line %zu", i);
-                return EXIT_FAILURE;
+                return -1;
             }
         }
     }
 
     close_file(history);
 
-    return EXIT_SUCCESS;
+    return 0;
 }

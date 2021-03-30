@@ -14,41 +14,74 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
+
+#include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
 #include "../../lib/include/allocation.h"
 
 
 
-#define PORT 2000 
-#define ATTEMPTS 10
+static void  wait_time   ( short );
+static int   socket_new  ( struct sockaddr_in * );
 
 
 
 
-
-static void  wait_time  ( short time );
+/******************************************************************************
+ ***                           INTERNAL FUNCTIONS                           ***
+ ******************************************************************************/
 
 
 
 static void
 wait_time( short time )
 {
-    while ((time--)+1)
+    do
     {
         printf("Connection Failed: Retrying in %d seconds\r", time);
         fflush(stdout);
         sleep(1);
     }
+    while (--time);
+
+    return;
 }
 
 
 
+static int
+socket_new( struct sockaddr_in *sock )
+{
+    const int new_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (new_socket == -1)
+    { 
+        perror("socket");
+        exit(EXIT_FAILURE);
+    }
+
+    sock->sin_family = AF_INET;
+    sock->sin_port = htons(PORT);
+    sock->sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("127.0.0.1");
+    memset(sock->sin_zero, 0x0, 8);
+
+    return new_socket;
+}
+
+
+
+/******************************************************************************
+ ***                           EXTERNAL FUNCTIONS                           ***
+ ******************************************************************************/
+
+
+
 void
-send_int( int socket, int number )
+send_int( const int socket, const int number )
 {
     if (send(socket, &number, sizeof(int), 0) == -1)
     {
@@ -60,11 +93,11 @@ send_int( int socket, int number )
 
 
 int
-recv_int( int socket )
+recv_int( const int socket )
 {
     int number;
 
-    int bytes_recvd = recv(socket, &number, sizeof(int), 0);
+    const int bytes_recvd = recv(socket, &number, sizeof(int), 0);
     if (bytes_recvd == -1)
     {
         perror("recv_int");
@@ -77,7 +110,7 @@ recv_int( int socket )
 
 
 void
-send_double( int socket, double number )
+send_double( const int socket, const double number )
 {
     if (send(socket, &number, sizeof(double), 0) == -1)
     {
@@ -89,11 +122,11 @@ send_double( int socket, double number )
 
 
 double
-recv_double( int socket )
+recv_double( const int socket )
 {
     double number;
     
-    int bytes_recvd = recv(socket, &number, sizeof(double), 0);
+    const int bytes_recvd = recv(socket, &number, sizeof(double), 0);
     if (bytes_recvd == -1)
     {
         perror("recv_double");
@@ -106,7 +139,7 @@ recv_double( int socket )
 
 
 void
-send_char( int socket, char character )
+send_char( const int socket, const char character )
 {
     if (send(socket, &character, sizeof(character), 0) == -1)
     {
@@ -118,11 +151,11 @@ send_char( int socket, char character )
 
 
 char
-recv_char( int socket )
+recv_char( const int socket )
 {
     char character;
     
-    int bytes_recvd = recv(socket, &character, sizeof(char), 0);
+    const int bytes_recvd = recv(socket, &character, sizeof(char), 0);
     if (bytes_recvd == -1)
     {
         perror("recv_char");
@@ -135,13 +168,13 @@ recv_char( int socket )
 
 
 void
-send_str( int socket, char *string )
+send_str( const int socket, const char *string )
 {
-    long length = strlen(string);
+    const long length = strlen(string);
 
     send_int(socket, length);
 
-    long bytes_sent = send(socket, string, sizeof(char) * length, 0);
+    const long bytes_sent = send(socket, string, sizeof(char) * length, 0);
     if (length != bytes_sent)
     {
         fprintf(stderr, "send_string: string not properly sent");
@@ -152,16 +185,16 @@ send_str( int socket, char *string )
 
 
 char *
-recv_str( int socket )
+recv_str( const int socket )
 {
-    long length = recv_int(socket);
+    const long length = recv_int(socket);
 
     char *string = allocate(length, sizeof(char));
 
-    long bytes_recvd = recv(socket, string, sizeof(char) * length, 0);
+    const long bytes_recvd = recv(socket, string, sizeof(char) * length, 0);
     if (bytes_recvd == -1)
     {
-        perror("recv_str");
+        perror("recv");
         // exit(EXIT_FAILURE);
         return NULL;
     }
@@ -178,84 +211,90 @@ recv_str( int socket )
 
 
 int
-client_socket( struct sockaddr_in *serv_addr )
+socket_client( struct sockaddr_in *socket )
 {
-    int new_socket = 0;
+    const int new_socket = socket_new(socket);
 
-    if ((new_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    for (short i = 0; i >= ATTEMPTS; ++i)
     {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
-
-    serv_addr->sin_family = AF_INET;
-    serv_addr->sin_port = htons(PORT);
-
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr->sin_addr) <= 0)
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-
-    for (short i = 0; connect(new_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0; ++i)
-    {
-        wait_time(5);
-
-        if (i >= ATTEMPTS)
+        if (connect(new_socket, (struct sockaddr *) socket, sizeof(*socket)) != -1)
         {
-            printf("Connection Failed: %d attempts was made before quitting\n", ATTEMPTS);
-            exit(EXIT_SUCCESS);
+            return new_socket;
         }
+
+        wait_time(5);
     }
 
-    return new_socket;
+    printf("Connection Failed: %d attempts was made before quitting\n", ATTEMPTS);
+    exit(EXIT_SUCCESS);
 }
 
 
 
 int
-server_socket( struct sockaddr_in *server )
+socket_server( struct sockaddr_in *socket )
 {
-    // Creating socket file descriptor
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd == -1)
-    { 
-        perror("Can't create socket");
-        exit(EXIT_FAILURE);
-    }
-    fprintf(stdout, "Server socket created with fd: %d\n", server_fd);
-
+    const int socket_fd = socket_new(socket);
 
     // Handle the error of the port already in use
-    int yes = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-    { 
-        perror("socket options error");
-        close_socket( &server_fd );
+    const int yes = 1;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+    {
+        perror("setsockopt");
+        socket_close(socket_fd);
         exit(EXIT_FAILURE);
     }
-    // server->sin_family = AF_INET;
-    // server->sin_port = htons( PORT );
-    // memset(server->sin_zero, 0x0, 8);
-    // server->sin_addr.s_addr = htonl(INADDR_ANY);
 
     // Bind socket to a port
-    if (bind(server_fd, (struct sockaddr *) &server, sizeof(server)) == -1)
+    if (bind(socket_fd, (struct sockaddr *) socket, sizeof(*socket)) == -1)
     { 
-        perror("socket bind error");
-        close_socket( &server_fd );
+        perror("bind");
+        socket_close(socket_fd);
         exit(EXIT_FAILURE);
     }
 
-    return server_fd;
+    return socket_fd;
 }
 
 
 
 void
-close_socket( int *socket )
+socket_listen( const int socket )
 {
-    close(*socket);
-    *socket = -1;
+    if (listen(socket, SOCKET_MAX_QUEUE) == -1)
+    {
+        perror("listen");
+        socket_close(socket);
+        exit(EXIT_FAILURE);
+    }
+
+    return;
+}
+
+
+
+int
+socket_accept( const int socket, struct sockaddr_in *client )
+{
+    const int socket_fd = accept(socket, (struct sockaddr *) client, (socklen_t *) sizeof(*client));
+    if (socket_fd == -1)
+    {
+        perror("accept");
+        socket_close(socket);
+        exit(EXIT_FAILURE);
+    }
+
+    return socket_fd;
+}
+
+
+
+void
+socket_close( const int socket )
+{
+    if (close(socket) == -1)
+    {
+        perror("close");
+        exit(EXIT_FAILURE);
+    }
 }

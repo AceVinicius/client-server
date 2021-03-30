@@ -20,62 +20,33 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
-
-
-
-#define NUM_BYTES_TO_READ 500
-#define PORT 2000
 
 
 
 int
 main( void )
 {
-    struct sockaddr_in *server;
-    struct sockaddr_in *client;
+    struct sockaddr_in server;
+    struct sockaddr_in client;
 
-    int server_fd = server_socket( server );
+    const int server_fd = socket_server(&server);
 
-    if (listen(server_fd, 3) == -1)
-    { 
-        perror("Listen error");
-        close_socket(&server_fd);
-        exit(EXIT_FAILURE);
-    }
+    socket_listen(server_fd);
 
-    int client_fd = accept(server_fd, (struct sockaddr *) &client, (socklen_t *) sizeof(client));
-    if (client_fd == -1)
+    while (1)
     {
-        perror("Accept error");
-        close_socket(&server_fd);
-        exit(EXIT_FAILURE);
+        const int client_fd = socket_accept(server_fd, &client);
+        
+        if (client_fd == 0) break;
+
+        // do some stuff
+
+        socket_close(client_fd);
     }
 
-    while (client_fd)
-    {
-        int number = recv_int(client_fd);
-        printf("received: %d\n", number);
-
-        double pi = recv_double(client_fd);
-        printf("received: %.13lf\n", pi);
-
-        char letter = recv_char(client_fd);
-        printf("received: %c\n", letter);
-
-        char *string = recv_str(client_fd);
-        printf("received: %s\n", string);
-
-        close_socket(&client_fd);
-        if ((client_fd = accept(server_fd, (struct sockaddr *) &client, (socklen_t*) sizeof(client))) < 0)
-        {
-            perror("accept");
-            close_socket(&server_fd);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    close_socket(&server_fd);
+    socket_close(server_fd);
 
     return EXIT_SUCCESS;
 }

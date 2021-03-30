@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "socket.h": "c",
+        "types.h": "c",
+        "inet.h": "c"
+    }
+}

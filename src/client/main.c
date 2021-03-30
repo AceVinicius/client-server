@@ -72,15 +72,8 @@ initialize_readline( void )
 void
 build_prompt( char *prompt ) 
 {
-    char *user = (char *) allocate(USER_LIMIT, sizeof(char));
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
-
-    if (getlogin_r(user, USER_LIMIT) == 0)
-    {
-        perror("getlogin");
-        // exit(EXIT_FAILURE);
-    }
 
     if (gethostname(host, HOST_LIMIT) == -1)
     {
@@ -99,25 +92,25 @@ build_prompt( char *prompt )
     }
     else
     {
-        if (strcmp(cwd, gethome()) == 0)
+        if (cmp(cwd, getenv("HOME")))
         {
-            cwd = strdup_f("~");
+            cwd = strdup("~");
         }
-        else if (strcmp(cwd, "/") == 0)
+        else if (cmp(cwd, "/"))
         {
-            cwd = strdup_f("/");
+            cwd = strdup("/");
         }
         else
         {
-            cwd = strdup_f(strrchr(cwd, '/') + 1);
+            cwd = strdup(strrchr(cwd, '/') + 1);
         }
     }
 
-    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", user, host, cwd, '%');
+    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", getenv("USER"), host, cwd, '%');
 
     free_mem(cwd);
     free_mem(host);
-    free_mem(user);
+    // free_mem(user);
 }
 
 
@@ -147,9 +140,51 @@ get_user_input( const char *prompt )
 
 
 
-int
-main( void )
+void
+send_files_to_server( const char *folder )
 {
+    if (folder == NULL)
+    {
+        fprintf(stderr, "NULL pointer at: sed_files_to_server");
+        exit(EXIT_FAILURE);
+    }
+
+
+
+    return;
+}
+
+
+
+int
+main( const int    argc ,
+      const char **argv )
+{
+    char *folder = NULL;
+
+    if (argc == 1)
+    {
+        folder = strdup(strcat(gethome(), DEFAULT_FOLDER));
+    }
+    else if (argc == 2)
+    {
+        if (argv[ 1 ][ 0 ] == '/')
+        {
+            folder = strdup(argv[ 1 ]);
+        }
+        else
+        {
+            folder = strdup(strcat(strcat(gethome(), "/"), argv[ 1 ]));
+        }
+    }
+    else
+    {
+        puts("too many arguments");
+        return EXIT_FAILURE;
+    }
+
+    send_files_to_server(folder);
+
     initialize_readline();
 
     bool status = true;

@@ -16,33 +16,22 @@
 #include <string.h>
 #include <stdbool.h>
 
-
 #include "../../lib/include/history.h"
 #include "../../lib/include/list.h"
 #include "../../lib/include/cd.h"
 #include "../../lib/include/ls.h"
 #include "../../lib/include/execute.h"
+#include "../../lib/include/general.h"
 
 
 
-static inline int  cmp           ( const char *str1 ,const char *str2 );
-static int         read_command  ( const char * );
+static int  read_command  ( const char * );
 
 
 
-/**
- * @brief Campare two words to see if they are equal
- *
- * @param str1 Word 1
- * @param str2 Word 2
- * @return int Returns 1 if they are equal and 0 if not
- */
-static inline int
-cmp( const char *str1 ,
-     const char *str2 )
-{
-    return !strcmp(str1, str2);
-}
+/******************************************************************************
+ ***                           INTERNAL FUNCTIONS                           ***
+ ******************************************************************************/
 
 
 
@@ -94,6 +83,12 @@ read_command( const char *command )
 
     return UNKNOWN_CMD_ID;
 }
+
+
+
+/******************************************************************************
+ ***                           EXTERNAL FUNCTIONS                           ***
+ ******************************************************************************/
 
 
 

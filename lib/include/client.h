@@ -8,12 +8,13 @@
 # define CWD_LIMIT     64
 # define PROMPT_LIMIT 168
 
+# define DEFAULT_FOLDER "/client-files"
+
 
 
 void  initialize_readline  ( void );
 void  build_prompt         ( char * );
 void  get_user_input       ( const char * );
-int   main                 ( void );
 
 
 
