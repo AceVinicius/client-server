@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <dirent.h>
 #include <stdbool.h>
 
 #include <sys/types.h>
@@ -27,8 +26,7 @@
 #include "../../lib/include/execute.h"
 #include "../../lib/include/color.h"
 #include "../../lib/include/ls.h"
-
-
+#include "../../lib/include/directory.h"
 
 
 
@@ -40,11 +38,8 @@ ls( LIST *command )
     unsigned int count     = 0;
 
     bool all_content = false;
-    // bool file_print  = false;
-    struct dirent *dptr = NULL;
     long *ptr = NULL;
     char curr_dir[ PWD_LIMIT ];
-    DIR *dp = NULL;
 
     OPTION *aux = command->options;
     for (size_t i = 0; aux != NULL; ++i)
@@ -63,15 +58,9 @@ ls( LIST *command )
         exit(EXIT_FAILURE);
     }
 
-    dp = opendir((const char*) curr_dir);
+    DIR *dp = open_dir(curr_dir);
 
-    if (dp == NULL)
-    {
-        fprintf(stderr, "bash: Could not open the working directory\n");
-        free_mem(ptr);
-        exit(EXIT_FAILURE);
-    }
-
+    struct dirent *dptr = NULL;
     while ((dptr = readdir(dp)) != NULL)
     {
         if (all_content)
@@ -80,16 +69,15 @@ ls( LIST *command )
         }
         else
         {
-            if ((dptr -> d_name[ 0 ]) != '.')
+            if ((dptr->d_name[ 0 ]) != '.')
             {
                 num_files++;
             }
         }
     }
 
-    closedir(dp);
+    close_dir(dp);
     dptr = NULL;
-    dp   = NULL;
 
     if (!num_files)
     {
@@ -111,14 +99,7 @@ ls( LIST *command )
         }
     }
 
-    dp = opendir((const char *) curr_dir);
-
-    if (dp == NULL)
-    {
-        fprintf(stderr, "bash: Could not open the working directory\n");
-        free_mem( ptr );
-        exit(EXIT_FAILURE);
-    }
+    dp = open_dir(curr_dir);
 
     unsigned int j = 0;
     for (count = 0; (dptr = readdir(dp)) != NULL; ++count)
@@ -143,6 +124,8 @@ ls( LIST *command )
             }
         }
     }
+
+    close_dir(dp);
 
     for (count = 0; count < num_files - 1; count++)
     {

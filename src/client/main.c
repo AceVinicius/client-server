@@ -14,6 +14,7 @@
 
 
 #include <stdio.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -29,7 +30,7 @@
 #include "../../lib/include/history.h"
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
-
+#include "../../lib/include/directory.h"
 
 
 
@@ -106,11 +107,10 @@ build_prompt( char *prompt )
         }
     }
 
-    snprintf(prompt, PROMPT_LIMIT, "%s@%s %s %c ", getenv("USER"), host, cwd, '%');
+    snprintf(prompt, PROMPT_LIMIT, "[%s@%s %s] %c ", getenv("USER"), host, cwd, '%');
 
     free_mem(cwd);
     free_mem(host);
-    // free_mem(user);
 }
 
 
@@ -141,18 +141,35 @@ get_user_input( const char *prompt )
 
 
 void
-send_files_to_server( const char *folder )
+send_files_to_server( const char *folder, const int socket_fd )
 {
     if (folder == NULL)
     {
-        fprintf(stderr, "NULL pointer at: sed_files_to_server");
+        fprintf(stderr, "NULL pointer at: send_files_to_server\n");
         exit(EXIT_FAILURE);
     }
 
+    DIR *directory = open_dir(folder);
+    struct dirent *file = NULL;
+    int num_files = 0;
 
+    while ((file = readdir(directory)) != NULL) ++num_files;
+
+    close_dir(directory);
+    directory = open_dir(folder);
+    file = NULL;
+    while ((file = readdir(directory)) != NULL)
+    {
+        send_str(socket_fd, file->d_name);
+    }
 
     return;
 }
+
+
+
+struct sockaddr_in server;
+int server_fd;
 
 
 
@@ -160,21 +177,20 @@ int
 main( const int    argc ,
       const char **argv )
 {
-    char *folder = NULL;
-
+    char *f = NULL;
     if (argc == 1)
     {
-        folder = strdup(strcat(gethome(), DEFAULT_FOLDER));
+        // f = strdup(strcat(getenv("HOME"), DEFAULT_FOLDER));
     }
     else if (argc == 2)
     {
         if (argv[ 1 ][ 0 ] == '/')
         {
-            folder = strdup(argv[ 1 ]);
+            // f = strdup(argv[ 1 ]);
         }
         else
         {
-            folder = strdup(strcat(strcat(gethome(), "/"), argv[ 1 ]));
+            // f = strdup(strcat(strcat(getenv("HOME"), "/"), argv[ 1 ]));
         }
     }
     else
@@ -183,8 +199,9 @@ main( const int    argc ,
         return EXIT_FAILURE;
     }
 
-    send_files_to_server(folder);
+    server_fd = socket_client(&server);
 
+    send_files_to_server(argv[ 1 ], server_fd);
     initialize_readline();
 
     bool status = true;

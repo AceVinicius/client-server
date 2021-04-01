@@ -47,7 +47,7 @@ wait_time( short time )
         fflush(stdout);
         sleep(1);
     }
-    while (--time);
+    while (time--);
 
     return;
 }
@@ -66,7 +66,6 @@ socket_new( struct sockaddr_in *sock )
 
     sock->sin_family = AF_INET;
     sock->sin_port = htons(PORT);
-    sock->sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("127.0.0.1");
     memset(sock->sin_zero, 0x0, 8);
 
     return new_socket;
@@ -198,12 +197,13 @@ recv_str( const int socket )
         // exit(EXIT_FAILURE);
         return NULL;
     }
-    else if (bytes_recvd != length)
-    {
-        perror("recv_str_size_not_match");
-        // exit(EXIT_FAILURE);
-        return NULL;
-    }
+    // else if (bytes_recvd != length)
+    // {
+    //     printf("%ld %ld\n", sizeof(char) * length, bytes_recvd);
+    //     perror("recv_str_size_not_match");
+    //     exit(EXIT_FAILURE);
+    //     return NULL;
+    // }
 
     return string;
 }
@@ -215,10 +215,13 @@ socket_client( struct sockaddr_in *socket )
 {
     const int new_socket = socket_new(socket);
 
-    for (short i = 0; i >= ATTEMPTS; ++i)
+    socket->sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    for (short i = 0; i <= ATTEMPTS; ++i)
     {
         if (connect(new_socket, (struct sockaddr *) socket, sizeof(*socket)) != -1)
         {
+            puts("");
             return new_socket;
         }
 
@@ -276,7 +279,7 @@ socket_listen( const int socket )
 int
 socket_accept( const int socket, struct sockaddr_in *client )
 {
-    const int socket_fd = accept(socket, (struct sockaddr *) client, (socklen_t *) sizeof(*client));
+    const int socket_fd = accept(socket, NULL, NULL);
     if (socket_fd == -1)
     {
         perror("accept");

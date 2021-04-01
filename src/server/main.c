@@ -25,6 +25,18 @@
 
 
 
+void
+do_something( const int socket_fd )
+{
+    int num_files = recv_int(socket_fd);
+    for (int i = 0; i < num_files; ++i)
+    {
+        puts(recv_str(socket_fd));
+    }
+}
+
+
+
 int
 main( void )
 {
@@ -41,7 +53,7 @@ main( void )
         
         if (client_fd == 0) break;
 
-        // do some stuff
+        do_something(client_fd);
 
         socket_close(client_fd);
     }

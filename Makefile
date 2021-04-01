@@ -4,7 +4,6 @@
 # ------------
 # The Makefile provides the following targets to make:
 #   $ make           compile and link
-#   $ make objs      compile only (no linking)
 #   $ make client    compile and link client only
 #   $ make server    compile and link server only
 #   $ make remake    clean objects, the executable and dependencies
@@ -34,9 +33,9 @@ DEBUG = -O3 -g3 -Wall -Wextra -Wpedantic
 DBG = gdb
 
 # Directories #
-BIN_DIR        = bin
+BIN_DIR       = bin
 CLIENT_TARGET = client
-SERVER_TARGET  = server
+SERVER_TARGET = server
 
 COMMON_SRC_DIR = src/common
 COMMON_OBJ_DIR = obj/common
@@ -62,7 +61,7 @@ SHELL   = /bin/zsh
 INSTALL = install
 
 # CFLAGS, LDFLAGS, CPPFLAGS, PREFIX #
-CFLAGS      := $(WARNING) $(DEBUG) -std=c11
+CFLAGS      := $(WARNING) $(DEBUG) -std=c17
 CPPFLAGS    := -MMD -MP
 LDFLAGS     := 
 PREFIX      := /usr/local
