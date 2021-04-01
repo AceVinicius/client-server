@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/client",
-            "args": [],
+            "args": [ "lib" ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
