@@ -149,27 +149,29 @@ send_files_to_server( const char *folder, const int socket_fd )
         exit(EXIT_FAILURE);
     }
 
-    DIR *directory = open_dir(folder);
-    struct dirent *file = NULL;
-    int num_files = 0;
+    struct dirent *file      = NULL;
+    DIR           *directory = open_dir(folder);
+    int            num_files = 0;
 
-    while ((file = readdir(directory)) != NULL) ++num_files;
+    while ((file = readdir(directory)) != NULL)
+    {
+        ++num_files;
+    }
 
     close_dir(directory);
     directory = open_dir(folder);
-    file = NULL;
+    file      = NULL;
+
+    send_int(socket_fd, num_files);
     while ((file = readdir(directory)) != NULL)
     {
         send_str(socket_fd, file->d_name);
     }
 
+    close_dir(directory);
+
     return;
 }
-
-
-
-struct sockaddr_in server;
-int server_fd;
 
 
 
@@ -177,20 +179,26 @@ int
 main( const int    argc ,
       const char **argv )
 {
-    char *f = NULL;
+    char *folder_path = NULL;
     if (argc == 1)
     {
-        // f = strdup(strcat(getenv("HOME"), DEFAULT_FOLDER));
+        folder_path = strdup(getenv("HOME"));
+        int size = strlen(folder_path) + strlen(DEFAULT_FOLDER);
+        reallocate(folder_path, size, sizeof(char));
+        strcat(folder_path, DEFAULT_FOLDER);
     }
     else if (argc == 2)
     {
         if (argv[ 1 ][ 0 ] == '/')
         {
-            // f = strdup(argv[ 1 ]);
+            folder_path = strdup(argv[ 1 ]);
         }
         else
         {
-            // f = strdup(strcat(strcat(getenv("HOME"), "/"), argv[ 1 ]));
+            folder_path = strdup(getenv("HOME"));
+            int size = strlen(folder_path) + strlen(argv[ 1 ]);
+            reallocate(folder_path, size, sizeof(char));
+            strcat(folder_path, argv[ 1 ]);
         }
     }
     else
@@ -199,9 +207,10 @@ main( const int    argc ,
         return EXIT_FAILURE;
     }
 
-    server_fd = socket_client(&server);
-
-    send_files_to_server(argv[ 1 ], server_fd);
+    struct sockaddr_in server;
+    int server_fd = socket_client(&server);
+    
+    send_files_to_server(folder_path, server_fd);
     initialize_readline();
 
     bool status = true;

@@ -8,7 +8,7 @@
 # define CWD_LIMIT     64
 # define PROMPT_LIMIT 168
 
-# define DEFAULT_FOLDER "/client-files"
+# define DEFAULT_FOLDER "/Public"
 
 
 

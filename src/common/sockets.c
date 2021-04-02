@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-
 #include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
 #include "../../lib/include/allocation.h"
@@ -28,7 +27,6 @@
 
 static void  wait_time   ( short );
 static int   socket_new  ( struct sockaddr_in * );
-
 
 
 
@@ -100,7 +98,7 @@ recv_int( const int socket )
     if (bytes_recvd == -1)
     {
         perror("recv_int");
-        // exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     return number;
@@ -129,7 +127,7 @@ recv_double( const int socket )
     if (bytes_recvd == -1)
     {
         perror("recv_double");
-        // exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     return number;
@@ -158,7 +156,7 @@ recv_char( const int socket )
     if (bytes_recvd == -1)
     {
         perror("recv_char");
-        // exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     return character;
@@ -177,7 +175,7 @@ send_str( const int socket, const char *string )
     if (length != bytes_sent)
     {
         fprintf(stderr, "send_string: string not properly sent");
-        // exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -186,24 +184,21 @@ send_str( const int socket, const char *string )
 char *
 recv_str( const int socket )
 {
-    const long length = recv_int(socket);
-
-    char *string = allocate(length, sizeof(char));
+    const long  length = recv_int(socket);
+    char       *string = allocate(length, sizeof(char));
 
     const long bytes_recvd = recv(socket, string, sizeof(char) * length, 0);
     if (bytes_recvd == -1)
     {
         perror("recv");
-        // exit(EXIT_FAILURE);
-        return NULL;
+        exit(EXIT_FAILURE);
     }
-    // else if (bytes_recvd != length)
-    // {
-    //     printf("%ld %ld\n", sizeof(char) * length, bytes_recvd);
-    //     perror("recv_str_size_not_match");
-    //     exit(EXIT_FAILURE);
-    //     return NULL;
-    // }
+    else if (bytes_recvd != length)
+    {
+        printf("%ld %ld\n", sizeof(char) * length, bytes_recvd);
+        perror("recv_str_size_not_match");
+        exit(EXIT_FAILURE);
+    }
 
     return string;
 }
@@ -211,18 +206,18 @@ recv_str( const int socket )
 
 
 int
-socket_client( struct sockaddr_in *socket )
+socket_client( struct sockaddr_in *client )
 {
-    const int new_socket = socket_new(socket);
+    const int client_fd = socket_new(client);
 
-    socket->sin_addr.s_addr = inet_addr("127.0.0.1");
+    client->sin_addr.s_addr = inet_addr("127.0.0.1");
 
     for (short i = 0; i <= ATTEMPTS; ++i)
     {
-        if (connect(new_socket, (struct sockaddr *) socket, sizeof(*socket)) != -1)
+        if (connect(client_fd, (struct sockaddr *) client, sizeof(*client)) != -1)
         {
             puts("");
-            return new_socket;
+            return client_fd;
         }
 
         wait_time(5);
@@ -235,39 +230,37 @@ socket_client( struct sockaddr_in *socket )
 
 
 int
-socket_server( struct sockaddr_in *socket )
+socket_server( struct sockaddr_in *server )
 {
-    const int socket_fd = socket_new(socket);
-
-    // Handle the error of the port already in use
+    const int server_fd = socket_new(server);
     const int yes = 1;
-    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
     {
         perror("setsockopt");
-        socket_close(socket_fd);
+        socket_close(server_fd);
         exit(EXIT_FAILURE);
     }
 
-    // Bind socket to a port
-    if (bind(socket_fd, (struct sockaddr *) socket, sizeof(*socket)) == -1)
+    if (bind(server_fd, (struct sockaddr *) server, sizeof(*server)) == -1)
     { 
         perror("bind");
-        socket_close(socket_fd);
+        socket_close(server_fd);
         exit(EXIT_FAILURE);
     }
 
-    return socket_fd;
+    return server_fd;
 }
 
 
 
 void
-socket_listen( const int socket )
+socket_listen( const int server_fd )
 {
-    if (listen(socket, SOCKET_MAX_QUEUE) == -1)
+    if (listen(server_fd, SOCKET_MAX_QUEUE) == -1)
     {
         perror("listen");
-        socket_close(socket);
+        socket_close(server_fd);
         exit(EXIT_FAILURE);
     }
 
@@ -277,17 +270,18 @@ socket_listen( const int socket )
 
 
 int
-socket_accept( const int socket, struct sockaddr_in *client )
+socket_accept( const int server_fd, struct sockaddr_in *client )
 {
-    const int socket_fd = accept(socket, NULL, NULL);
-    if (socket_fd == -1)
+    int size = sizeof(struct sockaddr_in);
+    const int client_fd = accept(server_fd, (struct sockaddr *) client, (socklen_t *) &size);
+    if (client_fd == -1)
     {
         perror("accept");
-        socket_close(socket);
+        socket_close(server_fd);
         exit(EXIT_FAILURE);
     }
 
-    return socket_fd;
+    return client_fd;
 }
 
 
