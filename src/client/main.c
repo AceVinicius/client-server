@@ -155,6 +155,11 @@ send_files_to_server( const char *folder, const int socket_fd )
 
     while ((file = readdir(directory)) != NULL)
     {
+        if (cmp(file->d_name, ".") || cmp(file->d_name, ".."))
+        {
+            continue;
+        }
+        
         ++num_files;
     }
 

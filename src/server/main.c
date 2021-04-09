@@ -25,17 +25,22 @@
 
 #include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
-
+#include "../../lib/include/hash-table.h"
 
 
 void
 do_something( const int socket_fd )
 {
+    HASH_TABLE *table = create_hash_table();
+
     int num_files = recv_int(socket_fd);
     for (int i = 0; i < num_files; ++i)
     {
-        puts(recv_str(socket_fd));
+        char *file = recv_str(socket_fd);
+        insert_hash_table(table, file, file);
     }
+    print_hash_table(table);
+    destroy_hash_table(table);
 }
 
 
