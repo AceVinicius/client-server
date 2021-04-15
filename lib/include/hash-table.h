@@ -3,17 +3,17 @@
 
 
 
-# define HASH_SIZE 7000
+# define HASH_SIZE 4096
 
 
 
-struct hash_item
+struct hash_item_t
 {
     char *key;
-    void *value;
+    char *data;
 };
 
-struct hash_table
+struct hash_table_t
 {
     struct hash_item **items;
     int count;
@@ -22,15 +22,16 @@ struct hash_table
 
 
 
-typedef struct hash_table HASH_TABLE;
-typedef struct hash_item HASH_ITEM;
+typedef struct hash_table_t HASH_TABLE;
+typedef struct hash_item_t HASH_ITEM;
 
 
 
-HASH_TABLE  *create_hash_table   ( void );
-void         destroy_hash_table  ( HASH_TABLE * );
-void         insert_hash_table   ( HASH_TABLE *, char *, char * );
-void         print_hash_table    ( const HASH_TABLE * );
+HASH_TABLE *  create_hash_table   ( void );
+void          destroy_hash_table  ( HASH_TABLE * );
+void          insert_hash_table   ( HASH_TABLE *, char *, char * );
+void *        search_hash_item    ( HASH_TABLE *, char * );
+void          print_hash_table    ( const HASH_TABLE * );
 
 
 

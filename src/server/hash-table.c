@@ -12,7 +12,6 @@
 
 
 #include <stdio.h>
-// #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,7 +22,7 @@
 
 
 static HASH_ITEM *      create_hash_item    ( const char *, const char * );
-static unsigned long    hash_function       ( const char * );
+static unsigned long    hash                ( const char * );
 static void             destroy_hash_item   ( HASH_ITEM * );
 
 
@@ -45,8 +44,8 @@ create_hash_item( const char *key   ,
     memcpy(new_item->key  , key  , key_len+1);
 
     size_t value_len = strlen(value);
-    new_item->value = allocate(value_len, sizeof(char));
-    memcpy(new_item->value, value, value_len+1);
+    new_item->data = allocate(value_len, sizeof(char));
+    memcpy(new_item->data, value, value_len+1);
 
     return new_item;
 }
@@ -54,13 +53,12 @@ create_hash_item( const char *key   ,
 
 
 static unsigned long
-hash_function( const char *key )
+hash( const char *key )
 {
-    unsigned long i = 0;
-    
+    unsigned long i[2];
     MurmurHash3_x64_128(key, strlen(key), 42, &i);
-
-    return i % HASH_SIZE;
+    printf("%d %d\n", i[0], i[1]);
+    return i[0] % HASH_SIZE;
 }
 
 
@@ -69,7 +67,7 @@ static void
 destroy_hash_item( HASH_ITEM *item )
 {
     free_mem(item->key);
-    free_mem(item->value);
+    free_mem(item->data);
     free_mem(item);
 }
 
@@ -120,7 +118,7 @@ insert_hash_table( HASH_TABLE *table ,
         exit(EXIT_FAILURE);
     }
 
-    unsigned long index = hash_function(key);
+    unsigned long index = hash(key);
 
     HASH_ITEM *item     = table->items[ index ];
     HASH_ITEM *new_item = create_hash_item(key, value);
@@ -137,11 +135,11 @@ insert_hash_table( HASH_TABLE *table ,
     // Update value
     if (cmp(item->key, key))
     {
-        free_mem(item->value);
+        free_mem(item->data);
 
         size_t value_len = strlen(value);
-        new_item->value = allocate(value_len, sizeof(char));
-        memcpy(new_item->value, value, value_len+1);
+        new_item->data = allocate(value_len, sizeof(char));
+        memcpy(new_item->data, value, value_len+1);
 
         return;
     }
@@ -150,6 +148,22 @@ insert_hash_table( HASH_TABLE *table ,
     // handle_collision();
 
     return;
+}
+
+
+
+void *
+search_hash_table( HASH_TABLE *table ,
+                   const char *key   )
+{
+    HASH_ITEM *item = table->items[ hash(key) ];
+
+    if (item != NULL)
+    {
+        return item->data;
+    }
+
+    return NULL;
 }
 
 
