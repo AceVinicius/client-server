@@ -304,7 +304,8 @@ insert_hash_table(       HASH_TABLE *table ,
     // Item found at index, update data
     else
     {
-        
+        delete_hash_table(table, key);
+        insert_hash_table(table, key, value);
     }
 
     return;
