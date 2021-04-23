@@ -179,6 +179,21 @@ send_files_to_server( const char *folder, const int socket_fd )
     }
 
     close_dir(directory);
+    directory = open_dir(folder);
+    file      = NULL;
+
+    send_int(socket_fd, num_files);
+    while ((file = readdir(directory)) != NULL)
+    {
+        if (cmp(file->d_name, ".") || cmp(file->d_name, ".."))
+        {
+            continue;
+        }
+
+        send_str(socket_fd, file->d_name);
+    }
+
+    close_dir(directory);
 
     return;
 }

@@ -40,6 +40,7 @@ do_something( const int socket_fd )
         insert_hash_table(table, file, file);
     }
     print_hash_table(table);
+
     destroy_hash_table(table);
 }
 

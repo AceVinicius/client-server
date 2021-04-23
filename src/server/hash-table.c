@@ -21,9 +21,19 @@
 #include "../../lib/include/general.h"
 
 
-static HASH_ITEM *      create_hash_item    ( const char *, const char * );
-static unsigned long    hash                ( const char * );
-static void             destroy_hash_item   ( HASH_ITEM * );
+
+static HASH_ITEM *     create_hash_item   ( const char *, const char * );
+static HASH_ITEM *     search_hash_item   ( const HASH_TABLE *, const char * );
+static void            destroy_hash_item  ( HASH_ITEM * );
+static unsigned long   hash               ( const char * );
+
+static LIST *  create_list   ( void );
+static NODE *  create_node   ( void );
+static void    insert_node   ( LIST *, HASH_ITEM * );
+static NODE *  search_node   ( LIST *, const char * );
+static void    delete_node   ( LIST *, const char * );
+static void    destroy_node  ( NODE * );
+static void    destroy_list  ( LIST * );
 
 
 
@@ -39,26 +49,37 @@ create_hash_item( const char *key   ,
 {
     HASH_ITEM *new_item = (HASH_ITEM *) allocate(0, sizeof(HASH_ITEM));
 
-    size_t key_len   = strlen(key);
-    new_item->key   = allocate(key_len  , sizeof(char));
-    memcpy(new_item->key  , key  , key_len+1);
-
-    size_t value_len = strlen(value);
-    new_item->data = allocate(value_len, sizeof(char));
-    memcpy(new_item->data, value, value_len+1);
+    new_item->key = strndup(key, MAX_DATA);
+    new_item->data = strndup(value, MAX_DATA);
 
     return new_item;
 }
 
 
 
-static unsigned long
-hash( const char *key )
+static HASH_ITEM *
+search_hash_item( const HASH_TABLE *table ,
+                  const char       *key   )
 {
-    unsigned long i[2];
-    MurmurHash3_x64_128(key, strlen(key), 42, &i);
-    printf("%d %d\n", i[0], i[1]);
-    return i[0] % HASH_SIZE;
+    unsigned long index = hash(key);
+
+    HASH_ITEM *item = table->items[ index ];
+
+    if (!item)
+    {
+        return NULL;
+    }
+
+    if (cmp(item->key, key))
+    {
+        return item;
+    }
+
+    NODE *node = search_node(table->overflow[ index ], key);
+    
+    return (node)
+        ? node->item
+        : NULL;
 }
 
 
@@ -69,6 +90,140 @@ destroy_hash_item( HASH_ITEM *item )
     free_mem(item->key);
     free_mem(item->data);
     free_mem(item);
+}
+
+
+
+static unsigned long
+hash( const char *key )
+{
+    unsigned long i[ 2 ];
+    MurmurHash3_x64_128(key, strlen(key), 42, &i);
+
+    return (i[ 0 ] + i[ 1 ]) % HASH_SIZE;
+}
+
+
+
+static LIST *
+create_list( void )
+{
+    LIST *new_list = (LIST *) allocate(0, sizeof(LIST));
+
+    new_list->head = NULL;
+    new_list->count = 0;
+
+    return new_list;
+}
+
+
+
+static NODE *
+create_node( void )
+{
+    NODE *new_node = (NODE *) allocate(0, sizeof(NODE));
+
+    new_node->item = NULL;
+    new_node->next = NULL;
+
+    return new_node;
+}
+
+
+
+static void
+insert_node( LIST      *list ,
+             HASH_ITEM *item )
+{
+    NODE *new_node = create_node();
+
+    new_node->item = item;
+    new_node->next = list->head;
+
+    list->head = new_node;
+    ++(list->count);
+}
+
+
+
+static NODE *
+search_node(       LIST *list ,
+             const char *key  )
+{
+    if (!list)
+    {
+        return NULL;
+    }
+
+    NODE *aux = list->head;
+    while (aux && !cmp(aux->item->key, key))
+    {
+        aux = aux->next;        
+    }
+
+    return aux;
+}
+
+
+
+static void
+delete_node(       LIST *list ,
+             const char *key  )
+{
+    if (!list)
+    {
+        return;
+    }
+
+    NODE *curr = list->head;
+    NODE *prev = NULL;
+    
+    while (curr)
+    {
+        if (cmp(curr->item->key, key))
+        {
+            if (!prev)
+            {
+                list->head = curr->next;
+            }
+            else
+            {
+                prev->next = curr->next;
+            }
+            
+            destroy_node(curr);
+            --(list->count);
+
+            return;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+}
+
+
+
+static void
+destroy_node( NODE *node )
+{
+    destroy_hash_item(node->item);
+    free_mem(node);
+}
+
+
+
+static void
+destroy_list( LIST *list )
+{
+    NODE *node = list->head;
+    while (node)
+    {
+        NODE *tmp = node;
+        node = node->next;
+        destroy_node(tmp);
+    }
+    
+    free_mem(list);
 }
 
 
@@ -84,12 +239,14 @@ create_hash_table( void )
 {
     HASH_TABLE *new_table = (HASH_TABLE *) allocate(0, sizeof(HASH_TABLE));
 
-    new_table->count = 0;
+    new_table->count    = 0;
+    new_table->items    = (HASH_ITEM **) allocate(HASH_SIZE, sizeof(HASH_ITEM *));
+    new_table->overflow = (LIST **)      allocate(HASH_SIZE, sizeof(LIST *));
 
-    new_table->items = (HASH_ITEM **) allocate(HASH_SIZE, sizeof(HASH_ITEM *));
     for (size_t i = 0; i < HASH_SIZE; ++i)
     {
-        new_table->items[ i ] = NULL;
+        new_table->items[ i ]    = NULL;
+        new_table->overflow[ i ] = NULL;
     }
 
     return new_table;
@@ -98,21 +255,21 @@ create_hash_table( void )
 
 
 void
-insert_hash_table( HASH_TABLE *table ,
-                   char       *key   ,
-                   char       *value )
+insert_hash_table(       HASH_TABLE *table ,
+                   const char       *key   ,
+                   const char       *value )
 {
-    if (table == NULL)
+    if (!table)
     {
         fprintf(stderr, "insert_hash_table: NULL Pointer Given: table\n");
         exit(EXIT_FAILURE);
     }
-    if (key == NULL)
+    if (!key)
     {
         fprintf(stderr, "insert_hash_table: NULL Pointer Given: key\n");
         exit(EXIT_FAILURE);
     }
-    if (value == NULL)
+    if (!value)
     {
         fprintf(stderr, "insert_hash_table: NULL Pointer Given: value\n");
         exit(EXIT_FAILURE);
@@ -120,32 +277,35 @@ insert_hash_table( HASH_TABLE *table ,
 
     unsigned long index = hash(key);
 
-    HASH_ITEM *item     = table->items[ index ];
-    HASH_ITEM *new_item = create_hash_item(key, value);
+    HASH_ITEM *item = search_hash_item(table, key);
 
-    // No match
-    if (item == NULL)
+    // No item found so let's create a new item
+    if (!item)
     {
-        table->items[ index ] = new_item;
+        HASH_ITEM *new_item = create_hash_item(key, value);
         ++(table->count);
-
-        return;
+        
+        // Table at index empty
+        if (!table->items[ index ])
+        {
+            table->items[ index ] = new_item;
+        }
+        // Table at index filled, resolve collision
+        else
+        {
+            LIST *list = table->overflow[ index ];
+            if (!list)
+            {
+                table->overflow[ index ] = create_list();
+            }
+            insert_node(table->overflow[ index ], new_item);
+        }
     }
-
-    // Update value
-    if (cmp(item->key, key))
+    // Item found at index, update data
+    else
     {
-        free_mem(item->data);
-
-        size_t value_len = strlen(value);
-        new_item->data = allocate(value_len, sizeof(char));
-        memcpy(new_item->data, value, value_len+1);
-
-        return;
+        
     }
-
-    // Colision
-    // handle_collision();
 
     return;
 }
@@ -153,47 +313,141 @@ insert_hash_table( HASH_TABLE *table ,
 
 
 void *
-search_hash_table( HASH_TABLE *table ,
-                   const char *key   )
+search_hash_table( const HASH_TABLE *table ,
+                   const char       *key   )
 {
-    HASH_ITEM *item = table->items[ hash(key) ];
-
-    if (item != NULL)
+    if (!table)
     {
-        return item->data;
+        fprintf(stderr, "search_hash_table: NULL Pointer Given: table\n");
+        exit(EXIT_FAILURE);
+    }
+    if (!key)
+    {
+        fprintf(stderr, "search_hash_table: NULL Pointer Given: key\n");
+        exit(EXIT_FAILURE);
     }
 
-    return NULL;
+    HASH_ITEM *item = search_hash_item(table, key);
+
+    return item->data;
 }
 
 
 
 void
-destroy_hash_table( HASH_TABLE *hash )
+delete_hash_table(       HASH_TABLE *table ,
+                   const char       *key   )
 {
+    if (!table)
+    {
+        fprintf(stderr, "delete_hash_table: NULL Pointer Given: table\n");
+        exit(EXIT_FAILURE);
+    }
+    if (!key)
+    {
+        fprintf(stderr, "delete_hash_table: NULL Pointer Given: key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    unsigned long index = hash(key);
+
+    HASH_ITEM *item = table->items[ index ];
+    
+    // Item does not exist
+    if (!item)
+    {
+        return;
+    }
+
+    LIST *list = table->overflow[ index ];
+    
+    // Item is only in table and no collision exists
+    if (!list && cmp(item->key, key))
+    {
+        table->items[ index ] = NULL;
+        --(table->count);
+        destroy_hash_item(item);
+    }
+    else if (list)
+    {   
+        // Item is only in table and has collision exists
+        if (cmp(item->key, key))
+        {
+            destroy_hash_item(item);
+            table->items[ index ] = create_hash_item(list->head->item->key, list->head->item->data);
+        }
+        
+        delete_node(list, list->head->item->key);
+
+        if (list->count == 0)
+        {
+            destroy_list(list);
+            table->overflow[ index ] = NULL;
+        }
+    }
+}
+
+
+
+void
+destroy_hash_table( HASH_TABLE *table )
+{
+    if (!table)
+    {
+        fprintf(stderr, "destroy_hash_table: NULL Pointer Given: table\n");
+        exit(EXIT_FAILURE);
+    }
+
     for (size_t i = 0; i < HASH_SIZE; ++i)
     {
-        HASH_ITEM *item = hash->items[ i ];
-        if (item != NULL)
+        HASH_ITEM *item = table->items[ i ];
+        if (item)
         {
             destroy_hash_item(item);
         }
+
+        LIST *list = table->overflow[ i ];
+        if (list)
+        {
+            destroy_list(list);
+        }
     }
-    
-    free_mem(hash->items);
-    free_mem(hash);
+
+    free_mem(table->items);
+    free_mem(table->overflow);
+    free_mem(table);
 }
 
 
 
 void
-print_hash_table( const HASH_TABLE* table ) {
-    printf("\nHash Table\n-------------------\n");
-    for (int i = 0; i < HASH_SIZE; i++)
+print_hash_table( const HASH_TABLE *table )
+{
+    if (!table)
+    {
+        fprintf(stderr, "print_hash_table: NULL Pointer Given: table\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\n\tHash Table\n-------------------\n");
+    for (size_t i = 0; i < HASH_SIZE; ++i)
     {
         if (table->items[ i ])
         {
-            printf("Index:%d, Key:%s, Value:%s\n", i, table->items[ i ]->key, table->items[ i ]->value);
+            printf("Index:%zu, Key:%s, Value:%s", i, table->items[ i ]->key, table->items[ i ]->data);
+
+            if (table->overflow[ i ])
+            {
+                printf(" => Overflow %d => ", table->overflow[ i]->count);
+                NODE *node = table->overflow[ i ]->head;
+                fflush(stdout);
+                while (node)
+                {
+                    printf("Key: %s, Value: %s ", node->item->key, node->item->data);
+                    node = node->next;
+                }
+            }
+            printf("\n");
         }
     }
     printf("-------------------\n\n");
