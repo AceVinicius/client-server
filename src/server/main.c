@@ -26,6 +26,8 @@
 #include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
 #include "../../lib/include/hash-table.h"
+#include "../../lib/include/allocation.h"
+
 
 
 void
@@ -38,8 +40,18 @@ do_something( const int socket_fd )
     {
         char *file = recv_str(socket_fd);
         insert_hash_table(table, file, file);
+        free_mem(file);
     }
     print_hash_table(table);
+
+    num_files = recv_int(socket_fd);
+    for (int i = 0; i < num_files; ++i)
+    {
+        char *file = recv_str(socket_fd);
+        delete_hash_table(table, file);
+        print_hash_table(table);
+        free_mem(file);
+    }
 
     destroy_hash_table(table);
 }
@@ -49,25 +61,28 @@ do_something( const int socket_fd )
 int
 main( void )
 {
-    struct sockaddr_in server;
-    struct sockaddr_in client;
+    struct sockaddr_in *server = (struct sockaddr_in *) allocate(0, sizeof(struct sockaddr_in));
+    struct sockaddr_in *client = (struct sockaddr_in *) allocate(0, sizeof(struct sockaddr_in));
 
-    const int server_fd = socket_server(&server);
+    const int server_fd = socket_server(server);
 
     socket_listen(server_fd);
 
-    while (1)
-    {
-        const int client_fd = socket_accept(server_fd, &client);
+    // while (1)
+    // {
+        const int client_fd = socket_accept(server_fd, client);
         
-        if (client_fd == 0) break;
+        // if (client_fd == 0) break;
 
         do_something(client_fd);
 
         socket_close(client_fd);
-    }
+    // }
 
     socket_close(server_fd);
+
+    free_mem(server);
+    free_mem(client);
 
     return EXIT_SUCCESS;
 }
