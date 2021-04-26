@@ -1,5 +1,1 @@
-sudo dnf install zsh
-sudo dnf install make
-sudo dnf install gdb
-sudo dnf install clang
-sudo dnf install readline-devel
+sudo dnf install zsh make gdb clang readline-devel valgrind debuginfo-install glibc-2.33-5.fc34.x86_64

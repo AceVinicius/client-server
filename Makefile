@@ -30,7 +30,8 @@ ST_AN := #-enable-checker security.insecureAPI.decodeValueOfObjCType
 DEBUG = -O3 -g3 -Wall -Wextra -Wpedantic
 
 # Debugger #
-DBG = gdb
+MEM = valgrind --track-origins=yes --leak-check=full -s
+DBG = #gdb
 
 # Directories #
 BIN_DIR       = bin
@@ -186,7 +187,7 @@ $(CLIENT_OBJ_DIR)/%.o: $(CLIENT_SRC_DIR)/%.c
 
 # Run #
 $(CLIENT_TARGET):
-	$(DBG) ./$(CLIENT_BIN_FILE)
+	$(MEM) $(DBG) ./$(CLIENT_BIN_FILE)
 
 
 
@@ -221,7 +222,7 @@ $(SERVER_OBJ_DIR)/%.o: $(SERVER_SRC_DIR)/%.c
 
 # Run #
 $(SERVER_TARGET):
-	$(DBG) ./$(SERVER_BIN_FILE)
+	$(MEM) $(DBG) ./$(SERVER_BIN_FILE)
 
 
 
@@ -248,6 +249,7 @@ show:
 	@echo 'COMPILER:          ' $(REAL_CC)
 	@echo 'LINKER:            ' $(REAL_LD)
 	@echo 'ST_AN:             ' $(ST_AN)
+	@echo 'MEM:               ' $(MEM)
 	@echo 'DBG:               ' $(DBG)
 	@echo 'SHELL:             ' $(SHELL)
 	@echo '-------------------'
