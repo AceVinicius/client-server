@@ -3,6 +3,10 @@
 
 
 
+# include "list.h"
+
+
+
 int  cd  ( const LIST * );
 
 

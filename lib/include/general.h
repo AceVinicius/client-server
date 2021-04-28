@@ -3,12 +3,8 @@
 
 
 
-char *  gethome   ( void );
-char *  strdup    ( const char * );
-int     cmp       ( const char *, const char * );
-
-extern char *  strdup  ( const char * );
-extern char *  strndup  ( const char *, const size_t );
+char *  gethome    ( void );
+int     cmp        ( const char *, const char * );
 
 
 

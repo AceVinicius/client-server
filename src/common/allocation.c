@@ -15,6 +15,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../../lib/include/allocation.h"
 
@@ -34,7 +36,7 @@ allocate( const size_t size ,
     void *new_ptr = (void *) calloc((size + 1), type);
     if (new_ptr == NULL)
     {
-        perror("allocate");
+        perror("calloc");
         exit(EXIT_FAILURE);
     }
 
@@ -58,17 +60,62 @@ reallocate(       void   *ptr      ,
 {
     if (ptr == NULL)
     {
+        fprintf(stderr, "reallocate: NULL Pointer Given: ptr\n");
         exit(EXIT_FAILURE);
+        allocate(new_size, type);
     }
 
     void *new_ptr = (void *) realloc(ptr, (new_size + 1) * type);
     if (new_ptr == NULL)
     {
-        perror("reallocate");
+        perror("realloc");
         exit(EXIT_FAILURE);
     }
 
     return (void *) new_ptr;
+}
+
+
+
+char *
+duplicate( const char *input )
+{
+    if (input == NULL)
+    {
+        fprintf(stderr, "duplicate: NULL Pointer Given: input\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char *output = strndup(input, strlen(input));
+    if (output == NULL)
+    {
+        perror("strndup");
+        exit(EXIT_FAILURE);
+    }
+
+    return output;
+}
+
+
+
+char *
+duplicate_n( const char   *input , 
+             const size_t  size  )
+{
+    if (input == NULL)
+    {
+        fprintf(stderr, "duplicate: NULL Pointer Given: input\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char *output = strndup(input, size);
+    if (output == NULL)
+    {
+        perror("strndup");
+        exit(EXIT_FAILURE);
+    }
+
+    return output;
 }
 
 
@@ -78,7 +125,7 @@ free_mem( void *ptr )
 {
     if (ptr == NULL)
     {
-        perror("free_mem");
+        fprintf(stderr, "free_mem: NULL Pointer Given: ptr\n");
         exit(EXIT_FAILURE);
     }
 

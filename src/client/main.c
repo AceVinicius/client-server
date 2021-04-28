@@ -52,15 +52,16 @@ static char *input = (char *) NULL;
 void
 initialize_readline( void )
 {
-    rl_initialize();
     using_history();
 
-    const char *path = get_history_path();
+    char *path = get_history_path();
 
     if (access(path, W_OK) == 0)
     {
         read_history(path);
     }
+
+    free_mem(path);
 }
 
 
@@ -73,6 +74,12 @@ initialize_readline( void )
 void
 build_prompt( char *prompt ) 
 {
+    if (prompt == NULL)
+    {
+        fprintf(stderr, "build_prompt: NULL Pointer Given: prompt\n");
+        exit(EXIT_FAILURE);
+    }
+
     char *host = (char *) allocate(HOST_LIMIT, sizeof(char));
     char *cwd  = (char *) allocate(CWD_LIMIT , sizeof(char));
 
@@ -95,15 +102,19 @@ build_prompt( char *prompt )
     {
         if (cmp(cwd, getenv("HOME")))
         {
-            cwd = strdup("~");
+            free_mem(cwd);
+            cwd = duplicate("~");
         }
         else if (cmp(cwd, "/"))
         {
-            cwd = strdup("/");
+            free_mem(cwd);
+            cwd = duplicate("/");
         }
         else
         {
-            cwd = strdup(strrchr(cwd, '/') + 1);
+            char *tmp = cwd;
+            cwd = duplicate(strrchr(cwd, '/') + 1);
+            free_mem(tmp);
         }
     }
 
@@ -207,22 +218,22 @@ main( const int    argc ,
     char *folder_path = NULL;
     if (argc == 1)
     {
-        folder_path = strdup(getenv("HOME"));
+        folder_path = duplicate(getenv("HOME"));
         int size = strlen(folder_path) + strlen(DEFAULT_FOLDER);
-        reallocate(folder_path, size, sizeof(char));
-        strcat(folder_path, DEFAULT_FOLDER);
+        folder_path = (char *) reallocate(folder_path, size, sizeof(char));
+        strncat(folder_path, DEFAULT_FOLDER, size);
     }
     else if (argc == 2)
     {
         if (argv[ 1 ][ 0 ] == '/')
         {
-            folder_path = strdup(argv[ 1 ]);
+            folder_path = duplicate(argv[ 1 ]);
         }
         else
         {
-            folder_path = strdup(getenv("HOME"));
+            folder_path = duplicate(getenv("HOME"));
             int size = strlen(folder_path) + strlen(argv[ 1 ]);
-            reallocate(folder_path, size, sizeof(char));
+            folder_path = (char *) reallocate(folder_path, size, sizeof(char));
             strcat(folder_path, argv[ 1 ]);
         }
     }
@@ -238,8 +249,10 @@ main( const int    argc ,
     send_files_to_server(folder_path, server_fd);
     initialize_readline();
 
-    bool status = true;
+    free_mem(folder_path);
 
+    bool status = true;
+    
     do
     {
         char *prompt = (char *) allocate(PROMPT_LIMIT, sizeof(char));
@@ -253,8 +266,12 @@ main( const int    argc ,
         status = execute(command);
 
         free_command(command);
+        free_mem(prompt);
+        free_mem(input);
     }
     while (status);
+
+    rl_clear_history();
 
     return EXIT_SUCCESS;
 }

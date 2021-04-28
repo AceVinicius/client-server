@@ -49,8 +49,8 @@ create_hash_item( const char *key   ,
 {
     HASH_ITEM *new_item = (HASH_ITEM *) allocate(0, sizeof(HASH_ITEM));
 
-    new_item->key = strndup(key, MAX_DATA);
-    new_item->data = strndup(value, MAX_DATA);
+    new_item->key = duplicate_n(key, MAX_DATA);
+    new_item->data = duplicate_n(value, MAX_DATA);
 
     return new_item;
 }

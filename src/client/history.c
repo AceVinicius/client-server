@@ -40,7 +40,10 @@ const int k_history_size = sizeof(k_history_name)/sizeof(char);
 void
 add_input_to_history( const char *input )
 {
-    FILE *history = open_file(get_history_path(), "a");
+    char *path = get_history_path();
+    FILE *history = open_file(path, "a");
+
+    free_mem(path);
 
     fputs(input, history);
     if (ferror(history))
@@ -101,7 +104,10 @@ get_history_path( void )
 int
 history( void )
 {
-    FILE *history = open_file(get_history_path(), "r");
+    char *path = get_history_path();
+    FILE *history = open_file(path, "r");
+
+    free_mem(path);
 
     char buffer[ HISTORY_LIMIT ];
 

@@ -38,6 +38,11 @@ open_dir( const char *folder )
 void
 close_dir( DIR *directory )
 {
+    if (directory == NULL)
+    {
+
+    }
+    
     if (closedir(directory) == -1)
     {
         perror("closedir");

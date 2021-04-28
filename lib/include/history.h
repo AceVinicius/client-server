@@ -3,6 +3,10 @@
 
 
 
+# include <stdio.h>
+
+
+
 # define HISTORY_LIMIT 512
 
 

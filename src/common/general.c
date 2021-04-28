@@ -42,24 +42,6 @@ gethome( void )
 
 
 
-char *
-strdup( const char *input )
-{
-    if (input == NULL)
-    {
-        return NULL;
-    }
-
-    int len = strlen(input);
-
-    char *output = (char *) allocate(len, sizeof(char));
-    output = (char *) memcpy(output, input, len);
-
-    return output;
-}
-
-
-
 /**
  * @brief Campare two words to see if they are equal
  *

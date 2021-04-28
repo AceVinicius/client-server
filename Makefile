@@ -62,7 +62,7 @@ SHELL   = /bin/zsh
 INSTALL = install
 
 # CFLAGS, LDFLAGS, CPPFLAGS, PREFIX #
-CFLAGS      := $(WARNING) $(DEBUG) -std=c17
+CFLAGS      := $(WARNING) $(DEBUG) -std=c2x
 CPPFLAGS    := -MMD -MP
 LDFLAGS     := 
 PREFIX      := /usr/local

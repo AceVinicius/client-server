@@ -68,16 +68,16 @@ main( void )
 
     socket_listen(server_fd);
 
-    // while (1)
-    // {
+    while (1)
+    {
         const int client_fd = socket_accept(server_fd, client);
         
-        // if (client_fd == 0) break;
+        if (client_fd == 0) break;
 
         do_something(client_fd);
 
         socket_close(client_fd);
-    // }
+    }
 
     socket_close(server_fd);
 
