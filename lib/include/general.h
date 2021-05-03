@@ -3,6 +3,10 @@
 
 
 
+# define CWD_LIMIT 64
+
+
+
 char *  gethome    ( void );
 int     cmp        ( const char *, const char * );
 
