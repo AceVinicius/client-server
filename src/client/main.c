@@ -156,27 +156,18 @@ send_files_to_server( const char *folder, const int socket_fd )
 {
     if (folder == NULL)
     {
-        fprintf(stderr, "NULL pointer at: send_files_to_server\n");
+        fprintf(stderr, "send_files_to_server: NULL Pointer Given: folder\n");
         exit(EXIT_FAILURE);
     }
 
     struct dirent *file      = NULL;
     DIR           *directory = open_dir(folder);
-    int            num_files = 0;
+    int            num_files;
 
-    while ((file = readdir(directory)) != NULL)
-    {
-        if (cmp(file->d_name, ".") || cmp(file->d_name, ".."))
-        {
-            continue;
-        }
-        
-        ++num_files;
-    }
+    for (num_files = -2; (file = readdir(directory)) != NULL; ++num_files);
 
-    close_dir(directory);
-    directory = open_dir(folder);
-    file      = NULL;
+    directory = reopen_dir(directory, folder);
+    file = NULL;
 
     send_int(socket_fd, num_files);
     while ((file = readdir(directory)) != NULL)
@@ -189,9 +180,8 @@ send_files_to_server( const char *folder, const int socket_fd )
         send_str(socket_fd, file->d_name);
     }
 
-    close_dir(directory);
-    directory = open_dir(folder);
-    file      = NULL;
+    directory = reopen_dir(directory, folder);
+    file = NULL;
 
     send_int(socket_fd, num_files);
     while ((file = readdir(directory)) != NULL)
