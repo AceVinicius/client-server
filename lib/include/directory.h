@@ -7,8 +7,9 @@
 
 
 
-DIR *  open_dir   ( const char * );
-void   close_dir  ( DIR * );
+DIR *  open_dir    ( const char * );
+DIR *  reopen_dir  ( DIR *, const char * );
+void   close_dir   ( DIR * );
 
 
 
