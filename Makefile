@@ -76,7 +76,7 @@ ALL_CPPFLAGS := $(CPPFLAGS)
 
 # Linker Flags #
 ALL_LDFLAGS := $(LDFLAGS)
-ALL_LDLIBS  := -lc -lreadline -lm
+ALL_LDLIBS  := -lc -lreadline -lm -lpthread
 
 
 

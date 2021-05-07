@@ -7,10 +7,6 @@
 
 
 
-# define PWD_LIMIT 128
-
-
-
 int  ls  ( LIST * );
 
 
