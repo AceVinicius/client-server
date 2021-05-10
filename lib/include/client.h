@@ -5,7 +5,6 @@
 
 # define USER_LIMIT    32
 # define HOST_LIMIT    64
-# define CWD_LIMIT     64
 # define PROMPT_LIMIT 168
 
 # define DEFAULT_FOLDER "/Public"

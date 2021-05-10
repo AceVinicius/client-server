@@ -34,13 +34,23 @@ open_dir( const char *folder )
 }
 
 
+DIR *
+reopen_dir( DIR *directory, const char *folder )
+{
+
+    close_dir(directory);
+
+    return open_dir(folder);
+}
+
+
 
 void
 close_dir( DIR *directory )
 {
     if (directory == NULL)
     {
-
+        
     }
     
     if (closedir(directory) == -1)

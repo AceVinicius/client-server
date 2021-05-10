@@ -18,11 +18,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include "../../lib/include/thread.h"
 #include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
 #include "../../lib/include/hash-table.h"
@@ -31,8 +33,10 @@
 
 
 void
-do_something( const int socket_fd )
+do_something( void *arg )
 {
+    const int socket_fd = (int) *arg;
+
     HASH_TABLE *table = create_hash_table();
 
     int num_files = recv_int(socket_fd);
@@ -68,13 +72,16 @@ main( void )
 
     socket_listen(server_fd);
 
+    pthread_t threads[ MAX_THREADS ];
+
     while (1)
     {
         const int client_fd = socket_accept(server_fd, client);
         
         if (client_fd == 0) break;
 
-        do_something(client_fd);
+        // pthread_create(&threads[ 0 ], NULL, do_something, client_fd);
+        create_thread(&threads[ 0 ], do_something, &client_fd);
 
         socket_close(client_fd);
     }

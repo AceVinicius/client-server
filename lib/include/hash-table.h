@@ -43,12 +43,12 @@ typedef struct node_t NODE;
 
 
 
-HASH_TABLE *  create_hash_table   ( void );
-void          insert_hash_table   ( HASH_TABLE *, const char *, const char * );
-void *        search_hash_table   ( const HASH_TABLE *, const char * );
-void          delete_hash_table   ( HASH_TABLE *, const char * );
-void          destroy_hash_table  ( HASH_TABLE * );
-void          print_hash_table    ( const HASH_TABLE * );
+extern HASH_TABLE *  create_hash_table   ( void );
+extern void          insert_hash_table   ( HASH_TABLE *, const char *, const char * );
+extern void *        search_hash_table   ( const HASH_TABLE *, const char * );
+extern void          delete_hash_table   ( HASH_TABLE *, const char * );
+extern void          destroy_hash_table  ( HASH_TABLE * );
+extern void          print_hash_table    ( const HASH_TABLE * );
 
 
 
