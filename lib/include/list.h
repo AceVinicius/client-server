@@ -1,6 +1,10 @@
 #ifndef LIST_H
 # define LIST_H
 
+# ifdef __cplusplus
+extern c {
+# endif
+
 
 
 struct list
@@ -38,5 +42,9 @@ void    insert_argument  ( LIST *, char * );
 void    free_command     ( LIST * );
 
 
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif // LIST_H

@@ -1,13 +1,13 @@
 #ifndef SOCKETS_H
 # define SOCKETS_H
 
-
-
 #include <arpa/inet.h>
 
-
-
 #define ATTEMPTS 15
+
+# ifdef __cplusplus
+extern c {
+# endif
 
 
 
@@ -26,5 +26,9 @@ int     socket_accept  ( const int, struct sockaddr_in * );
 void    socket_close   ( const int );
 
 
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif // SOCKETS_H

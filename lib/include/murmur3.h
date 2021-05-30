@@ -3,8 +3,8 @@
 // public domain. The author hereby disclaims copyright to this source
 // code.
 
-#ifndef _MURMURHASH3_H_
-# define _MURMURHASH3_H_
+#ifndef MURMURHASH3_H
+# define MURMURHASH3_H
 
 # include <stdint.h>
 
@@ -12,14 +12,14 @@
 extern "C" {
 # endif
 
-//-----------------------------------------------------------------------------
+
 
 void MurmurHash3_x64_128(const void *key, int len, uint32_t seed, void *out);
 
-//-----------------------------------------------------------------------------
+
 
 # ifdef __cplusplus
 }
 # endif
 
-#endif // _MURMURHASH3_H_
+#endif // MURMURHASH3_H

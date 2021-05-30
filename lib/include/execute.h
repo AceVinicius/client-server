@@ -1,11 +1,7 @@
 #ifndef EXECUTE_H
 # define EXECUTE_H
 
-
-
 # include "list.h"
-
-
 
 # define EXIT_CLIENT        false
 # define CONTINUE_CLIENT     true
@@ -21,6 +17,7 @@
 # define HELP_CMD_ID            7
 # define LS_CMD_ID              8
 # define CD_CMD_ID              9
+# define SHOW_CMD_ID           10
 
 # define EMPTY_CMD           NULL
 # define REMOVE_CMD          "rm"
@@ -32,11 +29,20 @@
 # define HELP_CMD          "help"
 # define LS_CMD              "ls"
 # define CD_CMD              "cd"
+# define SHOW_CMD          "show"
+
+# ifdef __cplusplus
+extern C {
+# endif
 
 
 
 int  execute  ( LIST * );
 
 
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif // EXECUTE_H

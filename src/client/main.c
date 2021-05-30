@@ -43,7 +43,6 @@
 static char *input = (char *) NULL;
 
 
-
 /**
  * @brief Initialize autocomplete in terminal and get latest history as input
  *        for older entries.
@@ -103,17 +102,17 @@ build_prompt( char *prompt )
         if (cmp(cwd, getenv("HOME")))
         {
             free_mem(cwd);
-            cwd = duplicate("~");
+            cwd = strndup("~", CWD_LIMIT);
         }
         else if (cmp(cwd, "/"))
         {
             free_mem(cwd);
-            cwd = duplicate("/");
+            cwd = strndup("/", CWD_LIMIT);
         }
         else
         {
             char *tmp = cwd;
-            cwd = duplicate(strrchr(cwd, '/') + 1);
+            cwd = strndup(strrchr(cwd, '/') + 1, CWD_LIMIT);
             free_mem(tmp);
         }
     }
@@ -136,7 +135,7 @@ get_user_input( const char *prompt )
 {
     if (input != NULL)
     {
-        free_mem(input);
+        // free_mem(input);
         input = (char *) NULL;
     }
 
@@ -152,24 +151,28 @@ get_user_input( const char *prompt )
 
 
 void
-send_files_to_server( const char *folder, const int socket_fd )
+send_files_to_server( const char *folder)
 {
     if (folder == NULL)
     {
         fprintf(stderr, "send_files_to_server: NULL Pointer Given: folder\n");
         exit(EXIT_FAILURE);
     }
+    
+    struct sockaddr_in server;
+    int server_fd = socket_client(&server);
 
-    struct dirent *file      = NULL;
-    DIR           *directory = open_dir(folder);
-    int            num_files;
+    send_int(server_fd, 0);
 
+    struct dirent *file = NULL;
+    DIR *directory = open_dir(folder);
+    
+    int num_files;
     for (num_files = -2; (file = readdir(directory)) != NULL; ++num_files);
 
     directory = reopen_dir(directory, folder);
-    file = NULL;
 
-    send_int(socket_fd, num_files);
+    send_int(server_fd, num_files);
     while ((file = readdir(directory)) != NULL)
     {
         if (cmp(file->d_name, ".") || cmp(file->d_name, ".."))
@@ -177,13 +180,40 @@ send_files_to_server( const char *folder, const int socket_fd )
             continue;
         }
 
-        send_str(socket_fd, file->d_name);
+        send_str(server_fd, file->d_name);
     }
+
+    socket_close(server_fd);
+    close_dir(directory);
+
+    return;
+}
+
+
+
+void
+remove_files_from_server( const char *folder )
+{
+    if (folder == NULL)
+    {
+        fprintf(stderr, "remove_files_to_server: NULL Pointer Given: folder\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    struct sockaddr_in server;
+    int server_fd = socket_client(&server);
+
+    send_int(server_fd, 1);
+
+    struct dirent *file = NULL;
+    DIR *directory = open_dir(folder);
+
+    int num_files;
+    for (num_files = -2; (file = readdir(directory)) != NULL; ++num_files);
 
     directory = reopen_dir(directory, folder);
-    file = NULL;
 
-    send_int(socket_fd, num_files);
+    send_int(server_fd, num_files);
     while ((file = readdir(directory)) != NULL)
     {
         if (cmp(file->d_name, ".") || cmp(file->d_name, ".."))
@@ -191,9 +221,10 @@ send_files_to_server( const char *folder, const int socket_fd )
             continue;
         }
 
-        send_str(socket_fd, file->d_name);
+        send_str(server_fd, file->d_name);
     }
 
+    socket_close(server_fd);
     close_dir(directory);
 
     return;
@@ -205,10 +236,9 @@ int
 main( const int    argc ,
       const char **argv )
 {
-    char *folder_path = NULL;
     if (argc == 1)
     {
-        folder_path = duplicate(getenv("HOME"));
+        folder_path = strndup(getenv("HOME"), HOME_LIMIT);
         int size = strlen(folder_path) + strlen(DEFAULT_FOLDER);
         folder_path = (char *) reallocate(folder_path, size, sizeof(char));
         strncat(folder_path, DEFAULT_FOLDER, size);
@@ -217,11 +247,11 @@ main( const int    argc ,
     {
         if (argv[ 1 ][ 0 ] == '/')
         {
-            folder_path = duplicate(argv[ 1 ]);
+            folder_path = strndup(argv[ 1 ], 256);
         }
         else
         {
-            folder_path = duplicate(getenv("HOME"));
+            folder_path = strndup(getenv("HOME"), HOME_LIMIT);
             int size = strlen(folder_path) + strlen(argv[ 1 ]);
             folder_path = (char *) reallocate(folder_path, size, sizeof(char));
             strcat(folder_path, argv[ 1 ]);
@@ -229,20 +259,23 @@ main( const int    argc ,
     }
     else
     {
-        puts("too many arguments");
+        puts("usage: [path_to_default_folder]");
         return EXIT_FAILURE;
     }
 
-    struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    // puts("[[ Connecting to Server ]]");
+    // struct sockaddr_in server;
+    // int server_fd = socket_client(&server);
     
-    send_files_to_server(folder_path, server_fd);
+    puts("[[ Sending Files to Server ]]");
+    send_files_to_server(folder_path);
+
+    puts("[[ Initializing Readline ]]");
     initialize_readline();
 
-    free_mem(folder_path);
 
     bool status = true;
-    
+
     do
     {
         char *prompt = (char *) allocate(PROMPT_LIMIT, sizeof(char));
@@ -261,7 +294,12 @@ main( const int    argc ,
     }
     while (status);
 
-    rl_clear_history();
+    puts("\n[[ Removing Files from Server ]]");
+    remove_files_from_server(folder_path);
 
+    puts("[[ Freeing Memory ]]");
+    free_mem(folder_path);
+
+    puts("\n\n[[ Exited Normally ]]\n\n");
     return EXIT_SUCCESS;
 }

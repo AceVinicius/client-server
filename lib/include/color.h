@@ -1,8 +1,6 @@
 #ifndef COLOR_H
 # define COLOR_H
 
-
-
 # define BOLD        1
 # define ITALIC      3
 # define UNDERLINE   4
@@ -20,6 +18,10 @@
 # define CYAN       36
 # define WHITE      37
 
+# ifdef __cplusplus
+extern c {
+# endif
+
 
 
 void  start   ( void );
@@ -29,5 +31,9 @@ void  reset   ( void );
 void  place   ( const int, const int );
 
 
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif // COLOR_H

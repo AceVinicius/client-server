@@ -43,7 +43,6 @@ ls( LIST *command )
         {
             all_content = true;
         }
-        ;
     }
 
     char curr_dir[ CWD_LIMIT ];
@@ -66,7 +65,7 @@ ls( LIST *command )
         {
             size_t size = strlen(dptr->d_name);
 
-            ptr[ num_files ] = (char *) allocate(size, sizeof(char));
+            // ptr[ num_files ] = (char *) allocate(size, sizeof(char));
             ptr[ num_files++ ] = dptr->d_name;
 
             if (size > max_size)
@@ -82,7 +81,7 @@ ls( LIST *command )
     }
 
 
-    // dp = reopen_dir(dp, curr_dir);
+    dp = reopen_dir(dp, curr_dir);
     
 
     // for (size_t count = 0, j = 0; (dptr = readdir(dp)) != NULL; ++count)
@@ -93,7 +92,7 @@ ls( LIST *command )
     //     }
     // }
 
-    // close_dir(dp);
+    close_dir(dp);
 
     // for (size_t count = 0; count < num_files - 1; count++)
     // {
@@ -151,8 +150,7 @@ ls( LIST *command )
     //     reset();
     // }
 
-    // puts("");
-    // free_mem(ptr);
+    free_mem(ptr);
 
     return 1;
 }

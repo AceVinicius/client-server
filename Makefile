@@ -118,10 +118,10 @@ ALL_GENERATED_DIRS := $(BIN_DIR) obj
 
 all: common server client
 
-common: common_dir
+server: common server_start server_dir $(SERVER_BIN_FILE) server_end
+client: common client_start client_dir $(CLIENT_BIN_FILE) client_end
 
-server: server_start server_dir $(SERVER_BIN_FILE) server_end
-client: client_start client_dir $(CLIENT_BIN_FILE) client_end
+common: common_dir
 
 run:   $(CLIENT_TARGET)
 start: $(SERVER_TARGET)

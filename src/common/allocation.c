@@ -19,7 +19,7 @@
 #include <string.h>
 
 #include "../../lib/include/allocation.h"
-
+#include "../../lib/include/general.h"
 
 
 /**
@@ -78,44 +78,15 @@ reallocate(       void   *ptr      ,
 
 
 char *
-duplicate( const char *input )
+strndup(const char *str, size_t n)
 {
-    if (input == NULL)
-    {
-        fprintf(stderr, "duplicate: NULL Pointer Given: input\n");
-        exit(EXIT_FAILURE);
-    }
+	size_t len = strnlen(str, n);
+	char *copy = allocate(len, sizeof(char));
     
-    char *output = strndup(input, strlen(input));
-    if (output == NULL)
-    {
-        perror("strndup");
-        exit(EXIT_FAILURE);
-    }
+	memcpy(copy, str, len);
+	copy[len] = '\0';
 
-    return output;
-}
-
-
-
-char *
-duplicate_n( const char   *input , 
-             const size_t  size  )
-{
-    if (input == NULL)
-    {
-        fprintf(stderr, "duplicate: NULL Pointer Given: input\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    char *output = strndup(input, size);
-    if (output == NULL)
-    {
-        perror("strndup");
-        exit(EXIT_FAILURE);
-    }
-
-    return output;
+	return (copy);
 }
 
 
@@ -125,8 +96,7 @@ free_mem( void *ptr )
 {
     if (ptr == NULL)
     {
-        fprintf(stderr, "free_mem: NULL Pointer Given: ptr\n");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     free(ptr);

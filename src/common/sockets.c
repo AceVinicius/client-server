@@ -64,6 +64,7 @@ socket_new( struct sockaddr_in *sock )
 
     sock->sin_family = AF_INET;
     sock->sin_port = htons(PORT);
+    
     memset(sock->sin_zero, 0x0, 8);
 
     return new_socket;
@@ -209,21 +210,19 @@ int
 socket_client( struct sockaddr_in *client )
 {
     const int client_fd = socket_new(client);
-
     client->sin_addr.s_addr = inet_addr("127.0.0.1");
 
     for (short i = 0; i <= ATTEMPTS; ++i)
     {
         if (connect(client_fd, (struct sockaddr *) client, sizeof(*client)) != -1)
         {
-            puts("");
             return client_fd;
         }
 
         wait_time(5);
     }
 
-    printf("Connection Failed: %d attempts was made before quitting\n", ATTEMPTS);
+    printf("\t[ERROR] :: Unable to connect with server! %i attempts was made.\n\n", ATTEMPTS);
     exit(EXIT_SUCCESS);
 }
 
@@ -273,7 +272,7 @@ int
 socket_accept( const int server_fd, struct sockaddr_in *client )
 {
     int size = sizeof(struct sockaddr_in);
-    const int client_fd = accept(server_fd, (struct sockaddr *) client, (socklen_t *) &size);
+    int client_fd = accept(server_fd, (struct sockaddr *) client, (socklen_t *) &size);
     if (client_fd == -1)
     {
         perror("accept");

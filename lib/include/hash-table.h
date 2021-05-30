@@ -1,55 +1,32 @@
 #ifndef HASH_TABLE_H
 # define HASH_TABLE_H
 
+# include <stdbool.h>
 
+# define MAX_KEY    128
 
-# define HASH_SIZE 2
-# define MAX_DATA   512
-
-
-
-struct hash_item_t
-{
-    char *key;
-    char *data;
-};
-
-struct hash_table_t
-{
-    struct hash_item_t **items;
-    struct list_t      **overflow;
-    int count;
-    int size;
-};
-
-struct list_t
-{
-    struct node_t *head;
-    int count;
-};
-
-struct node_t
-{
-    struct hash_item_t *item;
-    struct node_t      *next;
-};
+# ifdef __cplusplus
+extern c {
+# endif
 
 
 
 typedef struct hash_table_t HASH_TABLE;
-typedef struct hash_item_t HASH_ITEM;
-typedef struct list_t LIST;
-typedef struct node_t NODE;
 
 
 
-extern HASH_TABLE *  create_hash_table   ( void );
-extern void          insert_hash_table   ( HASH_TABLE *, const char *, const char * );
-extern void *        search_hash_table   ( const HASH_TABLE *, const char * );
-extern void          delete_hash_table   ( HASH_TABLE *, const char * );
-extern void          destroy_hash_table  ( HASH_TABLE * );
-extern void          print_hash_table    ( const HASH_TABLE * );
+extern HASH_TABLE *  hash_table_create   ( const size_t, const size_t );
+extern bool          hash_table_destroy  ( HASH_TABLE * );
+extern bool          hash_table_insert   ( HASH_TABLE *, const char *, const void * );
+extern void *        hash_table_peek     ( HASH_TABLE *, const char * );
+extern bool          hash_table_delete   ( HASH_TABLE *, const char * );
+extern void          hash_table_print    ( const HASH_TABLE * );
+extern void          hash_table_list     ( const HASH_TABLE *, const int );
 
 
+
+# ifdef __cplusplus
+}
+# endif
 
 #endif // HASH_TABLE_H
