@@ -7,7 +7,7 @@
 # define BUFFER_SIZE        1024
 # define SERVER_IP   "127.0.0.1"
 # define SERVER_PORT        8080
-# define CLIENT_PORT        8079
+# define CLIENT_PORT        2000
 
 # ifdef __cplusplus
 extern c {

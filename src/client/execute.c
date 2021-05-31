@@ -107,6 +107,7 @@ send_file_s( LIST *command )
     struct sockaddr_in server;
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 2);
+    send_int(server_fd, command->port);
     
     ARGUMENT *arg = command->arguments;
 
@@ -189,6 +190,7 @@ remove_file( LIST *command )
     struct sockaddr_in server;
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 3);
+    send_int(server_fd, command->port);
     
     ARGUMENT *arg = command->arguments;
 
@@ -236,11 +238,12 @@ remove_file( LIST *command )
 
 
 int
-show( void )
+show( LIST *command )
 {
     struct sockaddr_in server;
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 4);
+    send_int(server_fd, command->port);
 
     int receiving;
 
@@ -278,6 +281,7 @@ fetch( LIST *command )
     struct sockaddr_in server;
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 5);
+    send_int(server_fd, command->port);
 
     while (arg != NULL)
     {
@@ -291,9 +295,12 @@ fetch( LIST *command )
         }
 
         char *client_ip = recv_str(server_fd);
+        int client_port = recv_int(server_fd);
+
+        printf("ip: %s - port: %hu\n", client_ip, client_port);
 
         struct sockaddr_in client;
-        int client_fd = socket_client(&client, client_ip, CLIENT_PORT);
+        int client_fd = socket_client(&client, client_ip, client_port);
 
         send_str(client_fd, arg->argument);
         recv_file(client_fd, arg->argument);
@@ -358,11 +365,11 @@ execute( LIST *command )
             break;
 
         case FETCH_CMD_ID:
-            // error = fetch();
+            error = fetch(command);
             break;
 
         case SHOW_CMD_ID:
-            error = show();
+            error = show(command);
             break;
 
         case LS_CMD_ID:

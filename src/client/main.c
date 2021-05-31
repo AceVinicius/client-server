@@ -41,8 +41,9 @@
  */
 static char *input = (char *) NULL;
 static char *g_folder_path = (char *) NULL;
+static unsigned short client_port;
 static struct sockaddr_in server;
-// static pthread_t file_thread;
+static pthread_t file_thread;
 
 
 /**
@@ -165,6 +166,7 @@ send_files_to_server( const char *folder)
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
 
     send_int(server_fd, 0);
+    send_int(server_fd, client_port);
 
     struct dirent *file = NULL;
     DIR *directory = open_dir(folder);
@@ -206,6 +208,7 @@ remove_files_from_server( const char *folder )
     int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
 
     send_int(server_fd, 1);
+    send_int(server_fd, client_port);
 
     struct dirent *file = NULL;
     DIR *directory = open_dir(folder);
@@ -239,7 +242,8 @@ send_requested_file( void *nothing )
 {
     puts("[[ Binding Server to a Socket ]]");
     const int server_fd = socket_server(&server, CLIENT_PORT);
-
+    client_port = ntohs(server.sin_port);
+    
     while (1)
     {
         socket_listen(server_fd);
@@ -266,6 +270,8 @@ int
 main( const int    argc ,
       const char **argv )
 {
+    thread_create(&file_thread, send_requested_file, NULL);
+
     if (argc == 1)
     {
         g_folder_path = strndup(getenv("HOME"), HOME_LIMIT);
@@ -292,14 +298,14 @@ main( const int    argc ,
         puts("usage: [path_to_default_folder]");
         return EXIT_FAILURE;
     }
-
-    // thread_create(&file_thread, send_requested_file, NULL);
     
-    puts("[[ Sending Files to Server ]]");
-    send_files_to_server(g_folder_path);
-
     puts("[[ Initializing Readline ]]");
     initialize_readline();
+
+    sleep(1);
+
+    puts("[[ Sending Files to Server ]]");
+    send_files_to_server(g_folder_path);
 
     bool status = true;
 
@@ -313,6 +319,7 @@ main( const int    argc ,
         LIST *command = initialize_list();
         parse(command, input);
         command->path = strndup(g_folder_path, CWD_LIMIT);
+        command->port = client_port;
         status = execute(command);
 
         free_command(command);

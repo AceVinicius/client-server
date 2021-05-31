@@ -143,13 +143,16 @@ handle_client( DATA *client )
                 {
                     client->file = recv_str(client->fd);
                     
-                    if (hash_table_peek(filesystem, client->file) == NULL)
+                    DATA *data = hash_table_peek(filesystem, client->file);
+                    if (data == NULL)
                     {
                         send_int(client->fd, 1);
                     }
                     else
                     {
                         send_int(client->fd, 0);
+                        send_str(client->fd, data->ip);
+                        send_int(client->fd, data->port);
                     }
 
                     free_mem(client->file);
@@ -211,9 +214,10 @@ handle_connections( void *nothing )
         struct sockaddr_in client_t;
         DATA *client = (DATA *) allocate(0, sizeof(DATA));
 
-        client->fd  = socket_accept(server_fd, &client_t);
-        client->ip  = inet_ntoa(client_t.sin_addr);
-        client->cmd = recv_int(client->fd);
+        client->fd   = socket_accept(server_fd, &client_t);
+        client->ip   = inet_ntoa(client_t.sin_addr);
+        client->cmd  = recv_int(client->fd);
+        client->port = recv_int(client->fd);
 
         if (enqueue(clients, client))
         {

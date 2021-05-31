@@ -13,6 +13,7 @@ struct list
     char *path;                 // 8 bytes
     struct option *options;     // 8 bytes
     struct argument *arguments; // 8 bytes
+    unsigned short port;        // 2 bytes
     int qtd_options;            // 4 bytes
     int qtd_arguments;          // 4 bytes
 };

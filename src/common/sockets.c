@@ -210,20 +210,24 @@ void
 send_file( const int   socket ,
            const char *file   )
 {
-    char data[BUFFER_SIZE] = { 0 };
-
     FILE *fp = open_file(file, "r");
-    while(fgets(data, BUFFER_SIZE, fp) != NULL)
+
+    char *buffer = (char *) allocate(BUFFER_SIZE, sizeof(char));
+
+    while (1)
     {
-        if (send(socket, data, sizeof(data), 0) == -1)
+        long bytes_read = fread(buffer, sizeof(char), BUFFER_SIZE, fp);
+        
+        if (bytes_read <= 0) break;
+        
+        if (send(socket, buffer, bytes_read, 0) == -1)
         {
             perror("Error in sending file.");
             exit(EXIT_FAILURE);
         }
-
-        explicit_bzero(data, BUFFER_SIZE);
     }
 
+    free_mem(buffer);
     close_file(fp);
 }
 
@@ -233,28 +237,27 @@ void
 recv_file( const int   socket ,
            const char *file   )
 {
-    int n;
-    char buffer[BUFFER_SIZE];
-
-    char *full_path = strndup(getenv("HOME"), 256);
-    strcat(full_path, "/Documents");
+    char *full_path = (char *) allocate(256, sizeof(char));
+    strcat(full_path, "/home/acevinicius/Downloads/");
     strcat(full_path, file);
 
     FILE *fp = open_file(full_path, "w");
 
+    char *buffer = (char *) allocate(BUFFER_SIZE, sizeof(char));
+
     while (1)
     {
-        n = recv(socket, buffer, BUFFER_SIZE, 0);
+        long bytes_read = recv(socket, buffer, BUFFER_SIZE, 0);
 
-        if (n <= 0)
-        {
-            break;
-            return;
-        }
+        if (bytes_read < 0) perror("recv");
+        if (bytes_read == 0) break;
 
-        fprintf(fp, "%s", buffer);
-        explicit_bzero(buffer, BUFFER_SIZE);
+        fwrite(buffer, 1, bytes_read, fp);
     }
+
+    free_mem(full_path);
+    free_mem(buffer);
+    close_file(fp);
 }
 
 
@@ -284,22 +287,27 @@ socket_client( struct sockaddr_in *client, const char *ip, const int port )
 int
 socket_server( struct sockaddr_in *server, const int port )
 {
-    const int server_fd = socket_new(server, port);
-    const int yes = 1;
+    int server_fd;
+    int yes = 1;
+    int i = 0;
 
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+    do
     {
-        perror("setsockopt");
-        socket_close(server_fd);
-        exit(EXIT_FAILURE);
-    }
+        if (i)
+        {
+            socket_close(server_fd);
+        }
 
-    if (bind(server_fd, (struct sockaddr *) server, sizeof(*server)) == -1)
-    { 
-        perror("bind");
-        socket_close(server_fd);
-        exit(EXIT_FAILURE);
+        server_fd = socket_new(server, port + i++);
+
+        if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+        {
+            perror("setsockopt");
+            socket_close(server_fd);
+            exit(EXIT_FAILURE);
+        }
     }
+    while (bind(server_fd, (struct sockaddr *) server, sizeof(*server)) == -1);
 
     return server_fd;
 }

@@ -16,6 +16,7 @@ struct data_t
 {
     int fd;
     int cmd;
+    unsigned short port;
     char *ip;
     char *file;
 };

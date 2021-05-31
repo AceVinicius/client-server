@@ -40,6 +40,7 @@ initialize_list( void )
     new_list->options       = NULL;
     new_list->arguments     = NULL;
     new_list->path          = NULL;
+    new_list->port          = 0;
     new_list->qtd_options   = 0;
     new_list->qtd_arguments = 0;
 
