@@ -14,10 +14,6 @@ extern c {
 
 
 
-static char *folder_path = NULL;
-
-
-
 void  initialize_readline  ( void );
 void  build_prompt         ( char * );
 void  get_user_input       ( const char * );

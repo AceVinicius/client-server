@@ -22,11 +22,11 @@
 #include "../../lib/include/server.h"
 #include "../../lib/include/sockets.h"
 #include "../../lib/include/allocation.h"
-
+#include "../../lib/include/files.h"
 
 
 static void  wait_time   ( short );
-static int   socket_new  ( struct sockaddr_in * );
+static int   socket_new  ( struct sockaddr_in *, const int );
 
 
 
@@ -53,7 +53,7 @@ wait_time( short time )
 
 
 static int
-socket_new( struct sockaddr_in *sock )
+socket_new( struct sockaddr_in *sock, const int port )
 {
     const int new_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (new_socket == -1)
@@ -63,7 +63,7 @@ socket_new( struct sockaddr_in *sock )
     }
 
     sock->sin_family = AF_INET;
-    sock->sin_port = htons(PORT);
+    sock->sin_port = htons(port);
     
     memset(sock->sin_zero, 0x0, 8);
 
@@ -206,11 +206,64 @@ recv_str( const int socket )
 
 
 
-int
-socket_client( struct sockaddr_in *client )
+void
+send_file( const int   socket ,
+           const char *file   )
 {
-    const int client_fd = socket_new(client);
-    client->sin_addr.s_addr = inet_addr("127.0.0.1");
+    char data[BUFFER_SIZE] = { 0 };
+
+    FILE *fp = open_file(file, "r");
+    while(fgets(data, BUFFER_SIZE, fp) != NULL)
+    {
+        if (send(socket, data, sizeof(data), 0) == -1)
+        {
+            perror("Error in sending file.");
+            exit(EXIT_FAILURE);
+        }
+
+        explicit_bzero(data, BUFFER_SIZE);
+    }
+
+    close_file(fp);
+}
+
+
+
+void
+recv_file( const int   socket ,
+           const char *file   )
+{
+    int n;
+    char buffer[BUFFER_SIZE];
+
+    char *full_path = strndup(getenv("HOME"), 256);
+    strcat(full_path, "/Documents");
+    strcat(full_path, file);
+
+    FILE *fp = open_file(full_path, "w");
+
+    while (1)
+    {
+        n = recv(socket, buffer, BUFFER_SIZE, 0);
+
+        if (n <= 0)
+        {
+            break;
+            return;
+        }
+
+        fprintf(fp, "%s", buffer);
+        explicit_bzero(buffer, BUFFER_SIZE);
+    }
+}
+
+
+
+int
+socket_client( struct sockaddr_in *client, const char *ip, const int port )
+{
+    const int client_fd = socket_new(client, port);
+    client->sin_addr.s_addr = inet_addr(ip);
 
     for (short i = 0; i <= ATTEMPTS; ++i)
     {
@@ -229,9 +282,9 @@ socket_client( struct sockaddr_in *client )
 
 
 int
-socket_server( struct sockaddr_in *server )
+socket_server( struct sockaddr_in *server, const int port )
 {
-    const int server_fd = socket_new(server);
+    const int server_fd = socket_new(server, port);
     const int yes = 1;
 
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)

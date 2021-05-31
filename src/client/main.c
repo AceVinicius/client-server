@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -31,9 +32,7 @@
 #include "../../lib/include/execute.h"
 #include "../../lib/include/allocation.h"
 #include "../../lib/include/directory.h"
-
-
-
+#include "../../lib/include/thread.h"
 
 
 
@@ -41,6 +40,9 @@
  * @brief User input
  */
 static char *input = (char *) NULL;
+static char *g_folder_path = (char *) NULL;
+static struct sockaddr_in server;
+// static pthread_t file_thread;
 
 
 /**
@@ -160,7 +162,7 @@ send_files_to_server( const char *folder)
     }
     
     struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
 
     send_int(server_fd, 0);
 
@@ -201,7 +203,7 @@ remove_files_from_server( const char *folder )
     }
     
     struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
 
     send_int(server_fd, 1);
 
@@ -232,29 +234,57 @@ remove_files_from_server( const char *folder )
 
 
 
+void *
+send_requested_file( void *nothing )
+{
+    puts("[[ Binding Server to a Socket ]]");
+    const int server_fd = socket_server(&server, CLIENT_PORT);
+
+    while (1)
+    {
+        socket_listen(server_fd);
+        
+        struct sockaddr_in client_t;
+        const int client_fd = socket_accept(server_fd, &client_t);
+        
+        char *full_path = (char *) allocate(CWD_LIMIT, sizeof(char));
+        strcat(full_path, g_folder_path);
+        strcat(full_path, "/");
+        strcat(full_path, recv_str(client_fd));
+
+        send_file(client_fd, full_path);
+
+        socket_close(client_fd);
+    }
+
+    return NULL;
+}
+
+
+
 int
 main( const int    argc ,
       const char **argv )
 {
     if (argc == 1)
     {
-        folder_path = strndup(getenv("HOME"), HOME_LIMIT);
-        int size = strlen(folder_path) + strlen(DEFAULT_FOLDER);
-        folder_path = (char *) reallocate(folder_path, size, sizeof(char));
-        strncat(folder_path, DEFAULT_FOLDER, size);
+        g_folder_path = strndup(getenv("HOME"), HOME_LIMIT);
+        int size = strlen(g_folder_path) + strlen(DEFAULT_FOLDER);
+        g_folder_path = (char *) reallocate(g_folder_path, size, sizeof(char));
+        strncat(g_folder_path, DEFAULT_FOLDER, size);
     }
     else if (argc == 2)
     {
         if (argv[ 1 ][ 0 ] == '/')
         {
-            folder_path = strndup(argv[ 1 ], 256);
+            g_folder_path = strndup(argv[ 1 ], 256);
         }
         else
         {
-            folder_path = strndup(getenv("HOME"), HOME_LIMIT);
-            int size = strlen(folder_path) + strlen(argv[ 1 ]);
-            folder_path = (char *) reallocate(folder_path, size, sizeof(char));
-            strcat(folder_path, argv[ 1 ]);
+            g_folder_path = strndup(getenv("HOME"), HOME_LIMIT);
+            int size = strlen(g_folder_path) + strlen(argv[ 1 ]);
+            g_folder_path = (char *) reallocate(g_folder_path, size, sizeof(char));
+            strcat(g_folder_path, argv[ 1 ]);
         }
     }
     else
@@ -263,16 +293,13 @@ main( const int    argc ,
         return EXIT_FAILURE;
     }
 
-    // puts("[[ Connecting to Server ]]");
-    // struct sockaddr_in server;
-    // int server_fd = socket_client(&server);
+    // thread_create(&file_thread, send_requested_file, NULL);
     
     puts("[[ Sending Files to Server ]]");
-    send_files_to_server(folder_path);
+    send_files_to_server(g_folder_path);
 
     puts("[[ Initializing Readline ]]");
     initialize_readline();
-
 
     bool status = true;
 
@@ -284,8 +311,8 @@ main( const int    argc ,
         get_user_input(prompt);
 
         LIST *command = initialize_list();
-
         parse(command, input);
+        command->path = strndup(g_folder_path, CWD_LIMIT);
         status = execute(command);
 
         free_command(command);
@@ -295,10 +322,10 @@ main( const int    argc ,
     while (status);
 
     puts("\n[[ Removing Files from Server ]]");
-    remove_files_from_server(folder_path);
+    remove_files_from_server(g_folder_path);
 
     puts("[[ Freeing Memory ]]");
-    free_mem(folder_path);
+    free_mem(g_folder_path);
 
     puts("\n\n[[ Exited Normally ]]\n\n");
     return EXIT_SUCCESS;

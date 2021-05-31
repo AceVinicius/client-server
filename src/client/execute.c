@@ -28,6 +28,7 @@
 #include "../../lib/include/sockets.h"
 
 
+
 static int  read_command  ( const char * );
 
 
@@ -94,7 +95,7 @@ read_command( const char *command )
 
 
 int
-send_file( LIST *command )
+send_file_s( LIST *command )
 {
     if (command->arguments == NULL)
     {
@@ -104,49 +105,51 @@ send_file( LIST *command )
     }
 
     struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 2);
     
     ARGUMENT *arg = command->arguments;
 
     while (arg != NULL)
     {
-        char *tmp = allocate(CWD_LIMIT, sizeof(char));
-        getcwd(tmp, CWD_LIMIT);
+        char *file = (char *) allocate(CWD_LIMIT, sizeof(char));
 
-        // DIR *dp = NULL;
-        // if ((dp = opendir(tmp)) == NULL)
-        // {
-        //     send_int(server_fd, 0);
-        //     arg = arg->next;
-        //     free_mem(tmp);
-        //     continue;
-        // }
-        // closedir(dp);
-        
-        strcat(tmp, "/");
-        strncat(tmp, arg->argument, 100);
+        strncpy(file, arg->argument, CWD_LIMIT);
 
-        FILE *in = fopen(tmp, "r");
+        FILE *in = fopen(file, "r");
         if (in == NULL)
         {
             fprintf(stderr, "cp: cannot stat '%s': No such file or directory\n", arg->argument);
             send_int(server_fd, 0);
+            free_mem(file);
             arg = arg->next;
-            free_mem(tmp);
             continue;
         }
 
-        char *tmp2 = allocate(CWD_LIMIT, sizeof(char));
-        strcpy(tmp2, "/home/acevinicius/Public/");
-        strcat(tmp2, arg->argument);
-        FILE *out = fopen(tmp2, "w");
+        char *full_path = (char *) allocate(CWD_LIMIT, sizeof(char));
+        char *file_name = (char *) allocate(CWD_LIMIT, sizeof(char));
+        
+        strncpy(full_path, command->path, CWD_LIMIT);
+        file_name = strrchr(arg->argument, '/');
+
+        if (file_name == NULL)
+        {
+            strncat(full_path, "/", CWD_LIMIT - strnlen(full_path, CWD_LIMIT));
+            strncat(full_path, arg->argument, CWD_LIMIT - strnlen(arg->argument, CWD_LIMIT));
+        }
+        else
+        {
+            strncat(full_path, file_name, CWD_LIMIT - strnlen(file_name, CWD_LIMIT));
+        }
+
+        FILE *out = fopen(full_path, "w");
         if (out == NULL)
         {
             fprintf(stderr, "bash: cannot create '%s' file\n", arg->argument);
             send_int(server_fd, 0);
+            free_mem(full_path);
+            fclose(in);
             arg = arg->next;
-            free_mem(tmp);
             continue;
         }
         
@@ -157,12 +160,11 @@ send_file( LIST *command )
         }
 
         send_int(server_fd, 1);
-        send_str(server_fd, arg->argument);
+        send_str(server_fd, strrchr(arg->argument, '/') + 1);
 
         fclose(in);
         fclose(out);
-        free_mem(tmp);
-        free_mem(tmp2);
+        free_mem(full_path);
 
         arg = arg->next;
     }
@@ -185,20 +187,34 @@ remove_file( LIST *command )
     }
 
     struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 3);
     
     ARGUMENT *arg = command->arguments;
 
     while (arg != NULL)
     {
-        char *tmp2 = allocate(CWD_LIMIT, sizeof(char));
-        strcpy(tmp2, "/home/acevinicius/Public/");
-        strcat(tmp2, arg->argument);
-        if (remove(tmp2))
+        char *full_path = (char *) allocate(CWD_LIMIT, sizeof(char));
+        char *file_name = (char *) allocate(CWD_LIMIT, sizeof(char));
+        
+        strncpy(full_path, command->path, CWD_LIMIT);
+        file_name = strrchr(arg->argument, '/');
+
+        if (file_name == NULL)
+        {
+            strncat(full_path, "/", CWD_LIMIT - strnlen(full_path, CWD_LIMIT));
+            strncat(full_path, arg->argument, CWD_LIMIT - strnlen(arg->argument, CWD_LIMIT));
+        }
+        else
+        {
+            strncat(full_path, file_name, CWD_LIMIT - strnlen(file_name, CWD_LIMIT));
+        }
+
+        if (remove(full_path))
         {
             fprintf(stderr, "rm: cannot remove '%s': No such file or directory\n", arg->argument);
             send_int(server_fd, 0);
+            free_mem(full_path);
             arg = arg->next;
             continue;
         }
@@ -206,7 +222,7 @@ remove_file( LIST *command )
         send_int(server_fd, 1);
         send_str(server_fd, arg->argument);
 
-        free_mem(tmp2);
+        free_mem(full_path);
 
         arg = arg->next;
     }
@@ -223,7 +239,7 @@ int
 show( void )
 {
     struct sockaddr_in server;
-    int server_fd = socket_client(&server);
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
     send_int(server_fd, 4);
 
     int receiving;
@@ -241,6 +257,54 @@ show( void )
     }
     while (receiving != -1);
 
+    socket_close(server_fd);
+
+    return 0;
+}
+
+
+
+int
+fetch( LIST *command )
+{
+    if (command->arguments == NULL)
+    {
+        fprintf(stderr, "fetch: missing operand\n");
+        puts("Try 'help fetch' for more information.");
+        return 2;
+    }
+
+    ARGUMENT *arg = command->arguments;
+    struct sockaddr_in server;
+    int server_fd = socket_client(&server, SERVER_IP, SERVER_PORT);
+    send_int(server_fd, 5);
+
+    while (arg != NULL)
+    {
+        send_int(server_fd, 1);
+        send_str(server_fd, arg->argument);
+        
+        if (recv_int(server_fd))
+        {
+            arg = arg->next;
+            continue;
+        }
+
+        char *client_ip = recv_str(server_fd);
+
+        struct sockaddr_in client;
+        int client_fd = socket_client(&client, client_ip, CLIENT_PORT);
+
+        send_str(client_fd, arg->argument);
+        recv_file(client_fd, arg->argument);
+
+        socket_close(client_fd);
+        free_mem(client_ip);
+
+        arg = arg->next;
+    }
+
+    send_int(server_fd, -1);
     socket_close(server_fd);
 
     return 0;
@@ -290,7 +354,7 @@ execute( LIST *command )
             break;
 
         case SEND_CMD_ID:
-            error = send_file(command);
+            error = send_file_s(command);
             break;
 
         case FETCH_CMD_ID:

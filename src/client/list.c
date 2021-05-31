@@ -39,6 +39,7 @@ initialize_list( void )
     new_list->command       = NULL;
     new_list->options       = NULL;
     new_list->arguments     = NULL;
+    new_list->path          = NULL;
     new_list->qtd_options   = 0;
     new_list->qtd_arguments = 0;
 
@@ -118,6 +119,7 @@ free_command( LIST *command )
 
     free_option(command->options);
     free_argument(command->arguments);
+    free_mem(command->path);
     free_mem(command);
 
     return;

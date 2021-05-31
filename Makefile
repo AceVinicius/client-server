@@ -30,8 +30,8 @@ ST_AN := #-enable-checker security.insecureAPI.decodeValueOfObjCType
 DEBUG = -O3 -g3 -Wall -Wextra -Wpedantic
 
 # Debugger #
-MEM = valgrind --track-origins=yes --leak-check=full -s
-DBG = #gdb
+MEM = #valgrind --track-origins=yes --leak-check=full -s
+DBG = gdb
 
 # Directories #
 BIN_DIR       = bin

@@ -10,6 +10,7 @@ extern c {
 struct list
 {
     char *command;              // 8 bytes
+    char *path;                 // 8 bytes
     struct option *options;     // 8 bytes
     struct argument *arguments; // 8 bytes
     int qtd_options;            // 4 bytes

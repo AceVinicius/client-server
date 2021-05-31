@@ -131,6 +131,36 @@ handle_client( DATA *client )
             break;
         }
 
+        case 5:
+        {
+            int is_valid;
+
+            do
+            {    
+                is_valid = recv_int(client->fd);
+
+                if (is_valid == 1)
+                {
+                    client->file = recv_str(client->fd);
+                    
+                    if (hash_table_peek(filesystem, client->file) == NULL)
+                    {
+                        send_int(client->fd, 1);
+                    }
+                    else
+                    {
+                        send_int(client->fd, 0);
+                    }
+
+                    free_mem(client->file);
+                }
+            }
+            while (is_valid != -1);
+
+
+            break;
+        }
+
         default:
         {
             break;
@@ -170,7 +200,7 @@ void *
 handle_connections( void *nothing )
 {
     puts("[[ Binding Server to a Socket ]]");
-    const int server_fd = socket_server(&server);
+    const int server_fd = socket_server(&server, 8080);
 
     while (running)
     {
